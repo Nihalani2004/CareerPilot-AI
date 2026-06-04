@@ -1,0 +1,605 @@
+/* ═══════════════════════════════════════════════
+   Interview Dashboard — Premium SaaS Design
+   ═══════════════════════════════════════════════ */
+
+/* ── Design Tokens ── */
+$bg-deep:      #08090d; // Page background
+$bg-surface:   #0f1118; // Dashboard card background
+$bg-card:      #151821; // Accordion card background
+$bg-card-open: #171b26; // Open accordion card background
+$bg-hover:     #1b1e2a; // Hover background
+$border:       rgba(255, 255, 255, 0.05);
+$border-hover: rgba(255, 255, 255, 0.1);
+$glass:        rgba(255, 255, 255, 0.02);
+
+$text-white:   #f8fafc; // Off-white text
+$text-dim:     #94a3b8; // Slate-400
+$text-muted:   #475569; // Slate-600
+
+$pink:         #ff2a6d; // Neon Pink for primary highlights
+$purple:       #8b5cf6; // Accent purple
+$green:        #10b981; // Accent green (Model answer / Match score)
+$amber:        #f59e0b; // Warning yellow
+$cyan:         #06b6d4;
+
+$radius-sm:    6px;
+$radius-md:    10px;
+$radius-lg:    12px;
+$radius-xl:    16px;
+
+/* ── Transitions ── */
+$ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+/* ═══════════════════════════
+   Page Wrapper & Base Setup
+   ═══════════════════════════ */
+.iv-page {
+    width: 100%;
+    min-height: 100vh;
+    background: $bg-deep;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    color: $text-white;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    box-sizing: border-box;
+
+    * {
+        box-sizing: border-box;
+    }
+}
+
+.iv-layout {
+    display: flex;
+    width: 100%;
+    max-width: 1140px;
+    height: calc(100vh - 4rem);
+    min-height: 580px;
+    background: $bg-surface;
+    border: 1px solid $border;
+    border-radius: $radius-xl;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Section Header Label ── */
+.iv-label {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.85rem;
+}
+
+/* ═══════════════════════════
+   Left Sidebar
+   ═══════════════════════════ */
+.iv-sidebar {
+    width: 200px;
+    min-width: 200px;
+    background: darken($bg-surface, 1.5%);
+    border-right: 1px solid $border;
+    padding: 1.75rem 0.85rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.iv-sidebar__download {
+    margin-top: auto;
+}
+
+.iv-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.iv-nav__item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.65rem 0.75rem;
+    border: none;
+    border-radius: $radius-md;
+    background: transparent;
+    color: $text-dim;
+    font-size: 0.8rem;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s $ease;
+
+    &:hover {
+        background: $bg-hover;
+        color: $text-white;
+    }
+
+    &--active {
+        background: rgba($pink, 0.08);
+        color: $pink;
+        font-weight: 600;
+    }
+}
+
+.iv-nav__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    opacity: 0.9;
+}
+
+.iv-nav__label {
+    white-space: nowrap;
+}
+
+/* ═══════════════════════════
+   Main Content Column (Middle)
+   ═══════════════════════════ */
+.iv-main {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    padding: 1.75rem 1.5rem;
+    overflow-y: auto;
+
+    /* Custom scrollbar for a premium look */
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 999px;
+        &:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+    }
+}
+
+.iv-main__header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    flex-shrink: 0; // Header stays fixed on top
+}
+
+.iv-main__title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: $text-white;
+    margin: 0;
+}
+
+.iv-pill {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: $text-dim;
+    background: rgba($text-dim, 0.08);
+    border: 1px solid $border;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+/* ── Cards Stack ── */
+.iv-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+/* ═══════════════════════════
+   Accordion Card Styling
+   ═══════════════════════════ */
+.iv-card {
+    background: $bg-card;
+    border: 1px solid $border;
+    border-radius: $radius-lg;
+    overflow: hidden;
+    transition: border-color 0.25s $ease, box-shadow 0.25s $ease, background 0.25s $ease;
+
+    &:hover:not(&--open) {
+        border-color: $border-hover;
+        background: $bg-hover;
+    }
+
+    &--open {
+        background: $bg-card-open;
+        border-color: rgba($purple, 0.25);
+        border-left: 3px solid $purple;
+        box-shadow: 
+            0 8px 30px rgba(0, 0, 0, 0.35),
+            0 0 0 1px rgba($purple, 0.05);
+    }
+}
+
+.iv-card__head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: none;
+    background: transparent;
+    color: $text-white;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s $ease;
+
+    &:hover {
+        background: $glass;
+    }
+}
+
+/* Question Badges */
+.iv-card__badge {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 22px;
+    padding: 0 0.4rem;
+    border-radius: 4px;
+    background: rgba($pink, 0.15);
+    border: 1px solid rgba($pink, 0.3);
+    color: $pink;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+
+    &--day {
+        background: rgba($purple, 0.15);
+        border-color: rgba($purple, 0.3);
+        color: $purple;
+        min-width: 44px;
+        border-radius: 999px;
+        text-transform: uppercase;
+        font-size: 0.58rem;
+    }
+}
+
+.iv-card__q {
+    flex: 1;
+    font-size: 0.82rem;
+    font-weight: 500;
+    line-height: 1.45;
+    color: $text-white;
+}
+
+/* Chevron */
+.iv-chevron {
+    flex-shrink: 0;
+    color: $text-muted;
+    transition: transform 0.3s $ease;
+
+    &--up {
+        transform: rotate(180deg);
+        color: $purple;
+    }
+}
+
+/* Card Body Content */
+.iv-card__body {
+    padding: 0 1rem 1.15rem calc(26px + 0.75rem + 1rem);
+    animation: slideIn 0.25s $ease;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.iv-card__section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.iv-card__divider {
+    height: 1px;
+    background: $border;
+    margin: 0.75rem 0;
+}
+
+.iv-card__text {
+    font-size: 0.8rem;
+    color: $text-dim;
+    line-height: 1.55;
+    margin: 0;
+}
+
+/* Tags in Body */
+.iv-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    width: fit-content;
+    font-size: 0.58rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+
+    &--intention {
+        background: rgba($purple, 0.08);
+        border: 1px solid rgba($purple, 0.15);
+        color: #a78bfa;
+    }
+
+    &--answer {
+        background: rgba($green, 0.08);
+        border: 1px solid rgba($green, 0.15);
+        color: #34d399;
+    }
+
+    svg {
+        flex-shrink: 0;
+    }
+}
+
+/* Task lists (roadmap) */
+.iv-card__tasks {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.iv-card__task {
+    position: relative;
+    font-size: 0.8rem;
+    color: $text-dim;
+    line-height: 1.5;
+    padding-left: 0.9rem;
+
+    &::before {
+        content: "";
+        position: absolute;
+        left: 0.15rem;
+        top: 0.5rem;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: $purple;
+    }
+}
+
+/* ═══════════════════════════
+   Right Panel
+   ═══════════════════════════ */
+.iv-panel {
+    width: 230px;
+    min-width: 230px;
+    background: darken($bg-surface, 1.5%);
+    border-left: 1px solid $border;
+    padding: 1.75rem 0.95rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* ── Match Score Circular Graphic ── */
+.iv-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.iv-score__ring {
+    position: relative;
+    width: 90px;
+    height: 90px;
+
+    svg {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+    }
+}
+
+.iv-score__track {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.03);
+    stroke-width: 6;
+}
+
+.iv-score__fill {
+    fill: none;
+    stroke: $green;
+    stroke-width: 6;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.8s $ease;
+}
+
+.iv-score__value {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.iv-score__num {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: $text-white;
+}
+
+.iv-score__pct {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: $text-muted;
+    margin-top: 0.4rem;
+    margin-left: 1px;
+}
+
+.iv-score__desc {
+    font-size: 0.7rem;
+    color: $green;
+    font-weight: 600;
+    text-align: center;
+    letter-spacing: 0.01em;
+}
+
+/* ── Skill Gaps Chip Lists ── */
+.iv-gaps {
+    display: flex;
+    flex-direction: column;
+}
+
+.iv-gaps__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.iv-gaps__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem;
+    padding: 0.55rem 0.7rem;
+    border-radius: $radius-md;
+    border-left: 3px solid;
+    background: $bg-card;
+    border-top: 1px solid rgba(255, 255, 255, 0.01);
+    border-right: 1px solid rgba(255, 255, 255, 0.01);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.01);
+    transition: transform 0.2s $ease, background-color 0.2s $ease;
+
+    &:hover {
+        transform: translateX(3px);
+    }
+}
+
+.iv-gaps__name {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: $text-white;
+    line-height: 1.35;
+    flex: 1;
+}
+
+.iv-gaps__sev {
+    flex-shrink: 0;
+    font-size: 0.52rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.12rem 0.45rem;
+    border-radius: 999px;
+}
+
+/* ═══════════════════════════
+   Responsive Design Breakpoints
+   ═══════════════════════════ */
+@media (max-width: 1024px) {
+    .iv-page {
+        padding: 1rem;
+    }
+
+    .iv-layout {
+        flex-direction: column;
+        max-width: 100%;
+        height: auto;
+        min-height: unset;
+    }
+
+    .iv-sidebar,
+    .iv-panel {
+        width: 100%;
+        min-width: unset;
+        border-right: none;
+        border-left: none;
+        border-bottom: 1px solid $border;
+    }
+
+    .iv-sidebar {
+        flex-direction: row;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        padding: 1rem;
+
+        .iv-label { margin-bottom: 0; }
+
+        .iv-sidebar__download {
+            margin-top: 0;
+        }
+    }
+
+    .iv-nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+
+    .iv-main {
+        padding: 1.25rem 1rem;
+        overflow-y: visible;
+        height: auto;
+    }
+
+    .iv-panel {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        justify-content: center;
+        padding: 1.25rem 1rem;
+    }
+
+    .iv-gaps__list {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .iv-gaps__item {
+        min-width: 180px;
+    }
+}
+
+@media (max-width: 600px) {
+    .iv-main__title {
+        font-size: 1rem;
+    }
+
+    .iv-card__head {
+        padding: 0.75rem 0.85rem;
+    }
+
+    .iv-card__body {
+        padding-left: 0.85rem;
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.success-button {
+    background-color: #10b981 !important;
+    color: white !important;
+}
+
