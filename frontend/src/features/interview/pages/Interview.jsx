@@ -1,103 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import "../style/Interview.scss";
 import { useInterview } from "../hooks/useInterview.js";
 import { useNavigate, useParams } from "react-router";
-
-/* ── Mock data (will be replaced by hook/state/API layers) ── */
-// const mockData = {
-//     matchScore: 95,
-//     technicalQuestions: [
-//         {
-//             question: "Explain the difference between Virtual DOM and Real DOM in React.js, and why it's beneficial.",
-//             intention: "To assess the candidate's understanding of React internals and performance optimization techniques.",
-//             answer: "Explain that the Virtual DOM is a lightweight copy of the Real DOM. When state changes, React updates the Virtual DOM first, performs 'diffing' to identify changes, and then updates only the necessary parts of the Real DOM (reconciliation). This minimizes expensive DOM operations.",
-//         },
-//         {
-//             question: "How do you handle authentication and authorization in your MERN stack applications? Mention JWT specifically.",
-//             intention: "To evaluate security knowledge and practical experience with REST API protection as mentioned in the AI Resume Builder project.",
-//             answer: "Describe the flow: User logs in, server validates credentials and issues a JSON Web Token (JWT). The token is stored on the client side (Local Storage or Cookies) and sent in the 'Authorization' header for subsequent requests. On the server, middleware verifies the token before granting access to protected routes.",
-//         },
-//         {
-//             question: "Can you explain the Middleware pattern in Express.js and how you used it in your projects?",
-//             intention: "To check backend architectural knowledge and understanding of request-response cycles.",
-//             answer: "Define middleware as functions that have access to the request object, response object, and the next middleware function. Mention use cases like logging (Morgan), body parsing (express.json), authentication checks, and error handling.",
-//         },
-//         {
-//             question: "Describe the implementation of the Razorpay integration in your ImagiFy project. How do you ensure the payment is verified securely?",
-//             intention: "To understand the candidate's ability to integrate third-party services and handle critical transactions.",
-//             answer: "Explain the frontend-backend-provider flow: Create an order on the backend, trigger the payment UI on the frontend, and most importantly, use a Webhook or secret-key signature verification on the backend after payment to prevent fraud.",
-//         },
-//         {
-//             question: "Given an array of strings, how would you group anagrams together? What is the time complexity of your approach?",
-//             intention: "To test Data Structures and Algorithms proficiency, specifically hash maps and string manipulation.",
-//             answer: "Use a Hash Map where the key is the sorted version of the string and the value is a list of original strings. Iterate through the array once. Time complexity: O(N * K log K) where N is the number of strings and K is the max length of a string.",
-//         },
-//     ],
-//     behavioralQuestions: [
-//         {
-//             question: "Tell me about a challenging technical hurdle you faced during a hackathon and how you overcame it.",
-//             intention: "To assess problem-solving skills, pressure management, and persistence.",
-//             answer: "Use the STAR method (Situation, Task, Action, Result). Focus on a specific bug or integration issue, the steps taken to debug it (reading documentation, using Postman), and the successful outcome.",
-//         },
-//         {
-//             question: "How do you prioritize tasks when working on multiple features for a project like the AI Resume Builder?",
-//             intention: "To evaluate time management and understanding of core vs. peripheral features.",
-//             answer: "Discuss identifying the 'Minimum Viable Product' (MVP) features first. Explain using tools like Trello or Git issues to track progress and focusing on high-impact tasks (like core API logic) before UI polish.",
-//         },
-//     ],
-//     skillGaps: [
-//         { skill: "Unit and Integration Testing (e.g., Jest, Mocha)", severity: "medium" },
-//         { skill: "Cloud Deployment & DevOps (e.g., AWS, Docker, CI/CD)", severity: "low" },
-//         { skill: "State Management Libraries (e.g., Redux/Zustand)", severity: "medium" },
-//     ],
-//     preparationPlan: [
-//         {
-//             day: 1,
-//             focus: "Advanced JavaScript & React Fundamentals",
-//             tasks: [
-//                 "Review ES6+ features: Closures, Hoisting, Promises, and Async/Await",
-//                 "Deep dive into React Hooks (useState, useEffect, useMemo, useCallback)",
-//                 "Practice building a small component using Context API",
-//             ],
-//         },
-//         {
-//             day: 2,
-//             focus: "Node.js, Express, and Database Schema Design",
-//             tasks: [
-//                 "Review Express middleware and error handling",
-//                 "Practice MongoDB aggregation pipelines and Mongoose schema validation",
-//                 "Explain the difference between SQL (MySQL) and NoSQL (MongoDB) use cases",
-//             ],
-//         },
-//         {
-//             day: 3,
-//             focus: "REST API Security and Third-party Integrations",
-//             tasks: [
-//                 "Implement a sample JWT authentication flow",
-//                 "Review Razorpay documentation and webhook verification logic",
-//                 "Study HTTP status codes and REST best practices",
-//             ],
-//         },
-//         {
-//             day: 4,
-//             focus: "Data Structures, Algorithms & Logic",
-//             tasks: [
-//                 "Solve Medium-level LeetCode problems on Arrays, Strings, and Hash Maps",
-//                 "Review Linked Lists and Tree traversal basics",
-//                 "Practice Big O analysis for all solutions",
-//             ],
-//         },
-//         {
-//             day: 5,
-//             focus: "Project Deep-Dive and Behavioral Mock",
-//             tasks: [
-//                 "Walk through AI Resume Builder code; be ready to explain every line",
-//                 "Prepare STAR-format answers for hackathon and internship experiences",
-//                 "Do a mock interview focusing on 'Why this company' and 'Technical strengths'",
-//             ],
-//         },
-//     ],
-// };
 
 /* ── Navigation Items with inline SVG icons ── */
 const NAV_ITEMS = [
@@ -147,65 +52,176 @@ const Chevron = ({ open }) => (
     </svg>
 );
 
+/* ── Animation Variants ── */
+const cardVariants = {
+    initial: { opacity: 0, y: 15 },
+    animate: (i) => ({
+        opacity: 1,
+        y: 0,
+        transition: { delay: i * 0.05, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] },
+    }),
+    exit: { opacity: 0, y: -10, transition: { duration: 0.2 } },
+};
+
+const bodyVariants = {
+    initial: { opacity: 0, height: 0 },
+    animate: { opacity: 1, height: 'auto', transition: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] } },
+    exit: { opacity: 0, height: 0, transition: { duration: 0.2, ease: 'easeInOut' } },
+};
+
+const contentFade = {
+    initial: { opacity: 0, x: 10 },
+    animate: { opacity: 1, x: 0, transition: { duration: 0.35, ease: 'easeOut' } },
+    exit: { opacity: 0, x: -10, transition: { duration: 0.2 } },
+};
+
 /* ═══════════════════════════════════════════
    Accordion Card — Questions
    ═══════════════════════════════════════════ */
 const QuestionCard = ({ idx, question, intention, answer, open, toggle }) => (
-    <div className={`iv-card ${open ? "iv-card--open" : ""}`}>
+    <motion.div
+        className={`iv-card ${open ? "iv-card--open" : ""}`}
+        custom={idx}
+        variants={cardVariants}
+        initial="initial"
+        animate="animate"
+        layout
+    >
         <button className="iv-card__head" onClick={toggle}>
             <span className="iv-card__badge">Q{idx + 1}</span>
             <span className="iv-card__q">{question}</span>
             <Chevron open={open} />
         </button>
-        {open && (
-            <div className="iv-card__body">
-                <div className="iv-card__section">
-                    <span className="iv-tag iv-tag--intention">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="12" r="10" />
-                            <circle cx="12" cy="12" r="6" />
-                            <circle cx="12" cy="12" r="2" />
-                        </svg>
-                        Intention
-                    </span>
-                    <p className="iv-card__text">{intention}</p>
-                </div>
-                <div className="iv-card__divider" />
-                <div className="iv-card__section">
-                    <span className="iv-tag iv-tag--answer">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                        Model Answer
-                    </span>
-                    <p className="iv-card__text">{answer}</p>
-                </div>
-            </div>
-        )}
-    </div>
+        <AnimatePresence>
+            {open && (
+                <motion.div
+                    className="iv-card__body"
+                    variants={bodyVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    style={{ overflow: 'hidden' }}
+                >
+                    <div className="iv-card__section">
+                        <span className="iv-tag iv-tag--intention">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <circle cx="12" cy="12" r="6" />
+                                <circle cx="12" cy="12" r="2" />
+                            </svg>
+                            Intention
+                        </span>
+                        <p className="iv-card__text">{intention}</p>
+                    </div>
+                    <div className="iv-card__divider" />
+                    <div className="iv-card__section">
+                        <span className="iv-tag iv-tag--answer">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Model Answer
+                        </span>
+                        <p className="iv-card__text">{answer}</p>
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    </motion.div>
 );
 
 /* ═══════════════════════════════════════════
    Accordion Card — Road Map Day
    ═══════════════════════════════════════════ */
-const DayCard = ({ day, focus, tasks, open, toggle }) => (
-    <div className={`iv-card ${open ? "iv-card--open" : ""}`}>
+const DayCard = ({ day, focus, tasks, open, toggle, idx }) => (
+    <motion.div
+        className={`iv-card ${open ? "iv-card--open" : ""}`}
+        custom={idx}
+        variants={cardVariants}
+        initial="initial"
+        animate="animate"
+        layout
+    >
         <button className="iv-card__head" onClick={toggle}>
             <span className="iv-card__badge iv-card__badge--day">Day {day}</span>
             <span className="iv-card__q">{focus}</span>
             <Chevron open={open} />
         </button>
-        {open && (
-            <div className="iv-card__body">
-                <ul className="iv-card__tasks">
-                    {tasks.map((t, i) => (
-                        <li key={i} className="iv-card__task">{t}</li>
-                    ))}
-                </ul>
-            </div>
-        )}
-    </div>
+        <AnimatePresence>
+            {open && (
+                <motion.div
+                    className="iv-card__body"
+                    variants={bodyVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    style={{ overflow: 'hidden' }}
+                >
+                    <ul className="iv-card__tasks">
+                        {tasks.map((t, i) => (
+                            <motion.li
+                                key={i}
+                                className="iv-card__task"
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: i * 0.05, duration: 0.3 }}
+                            >
+                                {t}
+                            </motion.li>
+                        ))}
+                    </ul>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    </motion.div>
 );
+
+/* ═══════════════════════════════════════════
+   Animated Score Ring
+   ═══════════════════════════════════════════ */
+const AnimatedScoreRing = ({ score }) => {
+    const circumference = 2 * Math.PI * 48; // r=48
+    const offset = circumference - (score / 100) * circumference;
+
+    return (
+        <div className="iv-score__ring">
+            <svg viewBox="0 0 120 120">
+                <defs>
+                    <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#8b5cf6" />
+                        <stop offset="100%" stopColor="#10b981" />
+                    </linearGradient>
+                </defs>
+                <circle cx="60" cy="60" r="48" className="iv-score__track" />
+                <motion.circle
+                    cx="60" cy="60" r="48"
+                    className="iv-score__fill"
+                    strokeDasharray={circumference}
+                    initial={{ strokeDashoffset: circumference }}
+                    animate={{ strokeDashoffset: offset }}
+                    transition={{ duration: 1.2, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+                />
+            </svg>
+            <div className="iv-score__value">
+                <motion.span
+                    className="iv-score__num"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.5, duration: 0.5 }}
+                >
+                    {score}
+                </motion.span>
+                <motion.span
+                    className="iv-score__pct"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.7, duration: 0.5 }}
+                >
+                    %
+                </motion.span>
+            </div>
+        </div>
+    );
+};
 
 /* ═══════════════════════════════════════════
    Interview Page Component
@@ -228,7 +244,14 @@ const Interview = () => {
     if (loading || !report) {
         return (
             <main className="loading-screen">
-                <h1>Loading your interview plan...</h1>
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}
+                >
+                    <div className="auth-spinner" />
+                    <h1>Loading your interview plan...</h1>
+                </motion.div>
             </main>
         )
     }
@@ -262,32 +285,41 @@ const Interview = () => {
 
 
     return (
-        <div className="iv-page">
+        <motion.div
+            className="iv-page"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4 }}
+        >
             <div className="iv-layout">
                 {/* ── Sidebar ── */}
                 <aside className="iv-sidebar">
                     <span className="iv-label">SECTIONS</span>
                     <nav className="iv-nav">
                         {NAV_ITEMS.map((item) => (
-                            <button
+                            <motion.button
                                 key={item.id}
                                 className={`iv-nav__item ${activeTab === item.id ? "iv-nav__item--active" : ""}`}
                                 onClick={() => handleTab(item.id)}
+                                whileHover={{ x: 3 }}
+                                whileTap={{ scale: 0.97 }}
                             >
                                 <span className="iv-nav__icon">{item.icon}</span>
                                 <span className="iv-nav__label">{item.label}</span>
-                            </button>
+                            </motion.button>
                         ))}
                     </nav>
-                    <button
+                    <motion.button
                         onClick={handleDownloadResume}
                         disabled={downloading}
                         className={`button primary-button iv-sidebar__download ${downloadSuccess ? 'success-button' : ''}`}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                     >
                         {downloading ? (
                             <>
-                                <svg className="spinner-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '0.5rem', animation: 'spin 1s linear infinite' }}>
+                                <svg className="spinner-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '0.5rem' }}>
                                     <line x1="12" y1="2" x2="12" y2="6"></line>
                                     <line x1="12" y1="18" x2="12" y2="22"></line>
                                     <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
@@ -310,7 +342,7 @@ const Interview = () => {
                                 Download Resume
                             </>
                         )}
-                    </button>
+                    </motion.button>
                 </aside>
 
                 {/* ── Main Content Column ── */}
@@ -324,62 +356,74 @@ const Interview = () => {
                         </h1>
                         <span className="iv-pill">
                             {activeTab === "roadmap"
-                                ? `${data.preparationPlan.length} questions`
+                                ? `${data.preparationPlan.length} days`
                                 : `${questions.length} questions`}
                         </span>
                     </div>
 
-                    {/* Question Cards Stack */}
-                    {(activeTab === "technical" || activeTab === "behavioral") && (
-                        <div className="iv-cards">
-                            {questions.map((q, i) => (
-                                <QuestionCard
-                                    key={i}
-                                    idx={i}
-                                    open={i === expanded}
-                                    toggle={() => toggle(i)}
-                                    {...q}
-                                />
-                            ))}
-                        </div>
-                    )}
+                    {/* Question / Roadmap Cards with AnimatePresence for tab transitions */}
+                    <AnimatePresence mode="wait">
+                        {(activeTab === "technical" || activeTab === "behavioral") && (
+                            <motion.div
+                                key={activeTab}
+                                className="iv-cards"
+                                variants={contentFade}
+                                initial="initial"
+                                animate="animate"
+                                exit="exit"
+                            >
+                                {questions.map((q, i) => (
+                                    <QuestionCard
+                                        key={`${activeTab}-${i}`}
+                                        idx={i}
+                                        open={i === expanded}
+                                        toggle={() => toggle(i)}
+                                        {...q}
+                                    />
+                                ))}
+                            </motion.div>
+                        )}
 
-                    {/* Road Map Cards Stack */}
-                    {activeTab === "roadmap" && (
-                        <div className="iv-cards">
-                            {data.preparationPlan.map((d, i) => (
-                                <DayCard
-                                    key={i}
-                                    open={i === expanded}
-                                    toggle={() => toggle(i)}
-                                    {...d}
-                                />
-                            ))}
-                        </div>
-                    )}
+                        {activeTab === "roadmap" && (
+                            <motion.div
+                                key="roadmap"
+                                className="iv-cards"
+                                variants={contentFade}
+                                initial="initial"
+                                animate="animate"
+                                exit="exit"
+                            >
+                                {data.preparationPlan.map((d, i) => (
+                                    <DayCard
+                                        key={i}
+                                        idx={i}
+                                        open={i === expanded}
+                                        toggle={() => toggle(i)}
+                                        {...d}
+                                    />
+                                ))}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </main>
 
                 {/* ── Right Panel ── */}
                 <aside className="iv-panel">
                     {/* Match Score */}
-                    <div className="iv-score">
+                    <motion.div
+                        className="iv-score"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.2, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    >
                         <span className="iv-label">MATCH SCORE</span>
-                        <div className="iv-score__ring">
-                            <svg viewBox="0 0 120 120">
-                                <circle cx="60" cy="60" r="48" className="iv-score__track" />
-                                <circle
-                                    cx="60" cy="60" r="48"
-                                    className="iv-score__fill"
-                                    strokeDasharray={`${(data.matchScore / 100) * 301.6} 301.6`}
-                                />
-                            </svg>
-                            <div className="iv-score__value">
-                                <span className="iv-score__num">{data.matchScore}</span>
-                                <span className="iv-score__pct">%</span>
-                            </div>
-                        </div>
-                        <span className="iv-score__desc">Strong match for this role</span>
-                    </div>
+                        <AnimatedScoreRing score={data.matchScore} />
+                        <span className="iv-score__desc">
+                            {data.matchScore >= 80 ? 'Strong match for this role' :
+                             data.matchScore >= 60 ? 'Good match — some gaps to address' :
+                             'Notable gaps — focused prep needed'}
+                        </span>
+                    </motion.div>
 
                     {/* Skill Gaps */}
                     <div className="iv-gaps">
@@ -388,19 +432,27 @@ const Interview = () => {
                             {data.skillGaps.map((gap, i) => {
                                 const s = SEVERITY[gap.severity] || SEVERITY.medium;
                                 return (
-                                    <div key={i} className="iv-gaps__item" style={{ borderLeftColor: s.color }}>
+                                    <motion.div
+                                        key={i}
+                                        className="iv-gaps__item"
+                                        style={{ borderLeftColor: s.color }}
+                                        initial={{ opacity: 0, x: 15 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: 0.4 + i * 0.08, duration: 0.4 }}
+                                        whileHover={{ x: 4 }}
+                                    >
                                         <span className="iv-gaps__name">{gap.skill}</span>
-                                        <span className="iv-gaps__sev" style={{ background: `${s.color}15`, color: s.color, border: `1px solid ${s.color}25` }}>
+                                        <span className="iv-gaps__sev" style={{ background: `${s.color}12`, color: s.color, border: `1px solid ${s.color}25` }}>
                                             {s.label}
                                         </span>
-                                    </div>
+                                    </motion.div>
                                 );
                             })}
                         </div>
                     </div>
                 </aside>
             </div>
-        </div>
+        </motion.div>
     );
 };
 

@@ -1,7 +1,30 @@
 import React, { useState, useRef } from "react";
+import { motion } from "framer-motion";
 import '../style/home.scss';
 import { useInterview } from "../hooks/useInterview.js";
 import { useNavigate } from "react-router";
+import ParticleField from "../../../components/ParticleField";
+
+/* ── Animation Variants ── */
+const fadeUp = {
+    initial: { opacity: 0, y: 25 },
+    animate: (i) => ({
+        opacity: 1,
+        y: 0,
+        transition: { delay: i * 0.07, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
+    }),
+};
+
+const cardStagger = {
+    initial: { opacity: 0, y: 20, scale: 0.97 },
+    animate: (i) => ({
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        transition: { delay: 0.3 + i * 0.06, duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] },
+    }),
+};
+
 const Home = () => {
 
     const { loading, generateReport, reports, deleteReport } = useInterview()
@@ -23,7 +46,14 @@ const Home = () => {
     if (loading) {
         return (
             <main className="loading-screen">
-                <h1>Loading your interview plan...</h1>
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}
+                >
+                    <div className="auth-spinner" />
+                    <h1>Loading your interview plan...</h1>
+                </motion.div>
             </main>
         )
     }
@@ -31,21 +61,31 @@ const Home = () => {
 
     return (
         <main className="home">
+            {/* ── 3D Background ── */}
+            <div className="home__hero-bg">
+                <ParticleField />
+            </div>
+
             {/* ── Hero Section ── */}
-            <section className="home__hero">
-                <h1 className="home__title">
+            <motion.section className="home__hero" initial="initial" animate="animate">
+                <motion.h1 className="home__title" custom={0} variants={fadeUp} initial="initial" animate="animate">
                     Create Your Custom <span className="home__title--accent">Interview Plan</span>
-                </h1>
-                <p className="home__subtitle">
+                </motion.h1>
+                <motion.p className="home__subtitle" custom={1} variants={fadeUp} initial="initial" animate="animate">
                     Let our AI analyze the job requirements and your unique profile to build a winning strategy.
-                </p>
-            </section>
+                </motion.p>
+            </motion.section>
 
             {/* ── Main Content Card ── */}
-            <section className="home__card">
+            <motion.section
+                className="home__card"
+                initial={{ opacity: 0, y: 30, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ delay: 0.2, duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+            >
                 <div className="home__card-inner">
                     {/* ── Left Column: Job Description ── */}
-                    <div className="home__col home__col--left">
+                    <motion.div className="home__col home__col--left" custom={2} variants={fadeUp} initial="initial" animate="animate">
                         <div className="home__col-header">
                             <div className="home__col-title">
                                 <span className="home__icon home__icon--briefcase">💼</span>
@@ -65,10 +105,10 @@ const Home = () => {
                             />
                             <span className="home__char-count">0 / 5000 chars</span>
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* ── Right Column: Your Profile ── */}
-                    <div className="home__col home__col--right">
+                    <motion.div className="home__col home__col--right" custom={3} variants={fadeUp} initial="initial" animate="animate">
                         <div className="home__col-title">
                             <span className="home__icon home__icon--profile">👤</span>
                             <h2>Your Profile</h2>
@@ -79,11 +119,16 @@ const Home = () => {
                             <p className="home__label">
                                 Upload Resume <span className="home__label--best">(Best Results)</span>
                             </p>
-                            <label className="home__dropzone" htmlFor="resume">
+                            <motion.label
+                                className="home__dropzone"
+                                htmlFor="resume"
+                                whileHover={{ scale: 1.01, borderColor: 'rgba(139, 92, 246, 0.5)' }}
+                                whileTap={{ scale: 0.99 }}
+                            >
                                 <span className="home__dropzone-icon">☁️</span>
                                 <span className="home__dropzone-text">Click to upload or drag &amp; drop</span>
                                 <span className="home__dropzone-hint">PDF or DOCX (Max 5MB)</span>
-                            </label>
+                            </motion.label>
                             <input ref={resumeInputRef}
                                 hidden
                                 type="file"
@@ -119,30 +164,52 @@ const Home = () => {
                                 Either a <strong>Resume</strong> or a <strong>Self Description</strong> is required to generate a personalized plan.
                             </p>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
-            </section>
+            </motion.section>
 
             {/* ── Bottom Action Bar ── */}
-            <section className="home__action-bar">
+            <motion.section
+                className="home__action-bar"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+            >
                 <span className="home__ai-note">AI-Powered Strategy Generation • Approx 30s</span>
-                <button
+                <motion.button
                     onClick={handleGenerateReport}
-                    className="button primary-button home__generate-btn">
+                    className="button primary-button home__generate-btn"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                >
                     <span className="home__generate-icon">✨</span>
                     Generate My Interview Strategy
-                </button>
-            </section>
+                </motion.button>
+            </motion.section>
 
             {/* Recent Reports List */}
             {reports.length > 0 && (
-                <section className='recent-reports'>
+                <motion.section
+                    className='recent-reports'
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5, duration: 0.5 }}
+                >
                     <h2>My Recent Interview Plans</h2>
                     <ul className='reports-list'>
-                        {reports.map(report => (
-                            <li key={report._id} className='report-item' onClick={() => navigate(`/interview/${report._id}`)}>
-                                <button 
-                                    className="report-delete-btn" 
+                        {reports.map((report, index) => (
+                            <motion.li
+                                key={report._id}
+                                className='report-item'
+                                onClick={() => navigate(`/interview/${report._id}`)}
+                                custom={index}
+                                variants={cardStagger}
+                                initial="initial"
+                                animate="animate"
+                                whileHover={{ y: -4 }}
+                            >
+                                <button
+                                    className="report-delete-btn"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         if (confirm("Are you sure you want to delete this interview plan?")) {
@@ -161,10 +228,10 @@ const Home = () => {
                                 <h3>{report.title || 'Untitled Position'}</h3>
                                 <p className='report-meta'>Generated on {new Date(report.createdAt).toLocaleDateString()}</p>
                                 <p className={`match-score ${report.matchScore >= 80 ? 'score--high' : report.matchScore >= 60 ? 'score--mid' : 'score--low'}`}>Match Score: {report.matchScore}%</p>
-                            </li>
+                            </motion.li>
                         ))}
                     </ul>
-                </section>
+                </motion.section>
             )}
 
 

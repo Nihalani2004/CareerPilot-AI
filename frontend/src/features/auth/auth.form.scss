@@ -1,43 +1,196 @@
-main{
-    min-height:100vh;
+/* ═══════════════════════════════════════════════
+   Auth Pages — Glassmorphism + 3D Background
+   ═══════════════════════════════════════════════ */
+
+.auth-page {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--bg-deep);
+  overflow: hidden;
+  padding: 2rem;
+}
+
+/* ── Glassmorphism Card ── */
+.auth-card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 420px;
+  padding: 2.5rem 2.25rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow:
+    var(--shadow-lg),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+  /* Subtle gradient border glow */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      rgba(139, 92, 246, 0.2) 0%,
+      transparent 50%,
+      rgba(255, 42, 109, 0.15) 100%
+    );
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: xor;
+    pointer-events: none;
+    z-index: -1;
+  }
+}
+
+/* ── Logo / Brand ── */
+.auth-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.auth-brand__icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: var(--gradient-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+}
+
+/* ── Title ── */
+.auth-card h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-white);
+  text-align: center;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.auth-subtitle {
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--text-dim);
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+/* ── Form ── */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+/* ── Input Group ── */
+.auth-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+
+  label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    letter-spacing: 0.02em;
+  }
+
+  input {
     width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    padding: 0.8rem 1rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-white);
+    font-family: inherit;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
 
-
-    .form-container{
-        min-width: 350px;
-
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-;
-    form{
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
+    &::placeholder {
+      color: var(--text-muted);
     }
 
-
-    .input-group{
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem; 
-
-
-        input{
-            border: none;
-            outline: none;
-            padding-inline: 1rem;
-            padding-block: 0.75rem;
-            border-radius: 0.75rem;
-        }
+    &:focus {
+      border-color: var(--accent-purple);
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
     }
+  }
+}
 
-    a{
-        color: #e1034d;
-        text-decoration: none;
+/* ── Submit Button (inside auth) ── */
+.auth-form .button {
+  margin-top: 0.5rem;
+  padding: 0.85rem;
+  font-size: 0.95rem;
+  width: 100%;
+}
+
+/* ── Footer Link ── */
+.auth-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+
+  a {
+    color: var(--accent-pink);
+    font-weight: 600;
+    margin-left: 0.25rem;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--accent-purple);
     }
+  }
+}
+
+/* ── Loading Spinner ── */
+.auth-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 1rem;
+}
+
+.auth-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent-purple);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 2rem 1.5rem;
+    max-width: 100%;
+  }
 }

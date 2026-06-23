@@ -1,35 +1,32 @@
-@use 'sass:color';
-
 /* ═══════════════════════════════════════════════
    Interview Dashboard — Premium SaaS Design
    ═══════════════════════════════════════════════ */
 
 /* ── Design Tokens ── */
-$bg-deep:      #08090d; // Page background
-$bg-surface:   #0f1118; // Dashboard card background
-$bg-card:      #151821; // Accordion card background
-$bg-card-open: #171b26; // Open accordion card background
-$bg-hover:     #1b1e2a; // Hover background
-$border:       rgba(255, 255, 255, 0.05);
-$border-hover: rgba(255, 255, 255, 0.1);
+$bg-deep:      #06080f;
+$bg-surface:   #0c0e18;
+$bg-card:      #111422;
+$bg-card-open: #141830;
+$bg-hover:     #161a2c;
+$border:       rgba(255, 255, 255, 0.06);
+$border-hover: rgba(255, 255, 255, 0.12);
 $glass:        rgba(255, 255, 255, 0.02);
 
-$text-white:   #f8fafc; // Off-white text
-$text-dim:     #94a3b8; // Slate-400
-$text-muted:   #475569; // Slate-600
+$text-white:   #f1f5f9;
+$text-dim:     #94a3b8;
+$text-muted:   #475569;
 
-$pink:         #ff2a6d; // Neon Pink for primary highlights
-$purple:       #8b5cf6; // Accent purple
-$green:        #10b981; // Accent green (Model answer / Match score)
-$amber:        #f59e0b; // Warning yellow
+$pink:         #ff2a6d;
+$purple:       #8b5cf6;
+$green:        #10b981;
+$amber:        #f59e0b;
 $cyan:         #06b6d4;
 
 $radius-sm:    6px;
 $radius-md:    10px;
-$radius-lg:    12px;
-$radius-xl:    16px;
+$radius-lg:    14px;
+$radius-xl:    20px;
 
-/* ── Transitions ── */
 $ease: cubic-bezier(0.4, 0, 0.2, 1);
 
 /* ═══════════════════════════
@@ -55,24 +52,26 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
 .iv-layout {
     display: flex;
     width: 100%;
-    max-width: 1140px;
+    max-width: 1180px;
     height: calc(100vh - 4rem);
     min-height: 580px;
     background: $bg-surface;
     border: 1px solid $border;
     border-radius: $radius-xl;
     overflow: hidden;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 /* ── Section Header Label ── */
 .iv-label {
     display: block;
-    font-size: 0.65rem;
+    font-size: 0.62rem;
     font-weight: 700;
     color: $text-muted;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.14em;
     margin-bottom: 0.85rem;
 }
 
@@ -80,11 +79,12 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
    Left Sidebar
    ═══════════════════════════ */
 .iv-sidebar {
-    width: 200px;
-    min-width: 200px;
-    background: color.adjust($bg-surface, $lightness: -1.5%);
+    width: 210px;
+    min-width: 210px;
+    background: rgba($bg-surface, 0.8);
+    backdrop-filter: blur(10px);
     border-right: 1px solid $border;
-    padding: 1.75rem 0.85rem;
+    padding: 1.75rem 0.9rem;
     display: flex;
     flex-direction: column;
 }
@@ -96,14 +96,14 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
 .iv-nav {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.3rem;
 }
 
 .iv-nav__item {
     display: flex;
     align-items: center;
     gap: 0.65rem;
-    padding: 0.65rem 0.75rem;
+    padding: 0.65rem 0.8rem;
     border: none;
     border-radius: $radius-md;
     background: transparent;
@@ -121,9 +121,11 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     &--active {
-        background: rgba($pink, 0.08);
-        color: $pink;
+        background: rgba($purple, 0.1);
+        color: $purple;
         font-weight: 600;
+        box-shadow: inset 3px 0 0 $purple;
+        border-radius: 0 $radius-md $radius-md 0;
     }
 }
 
@@ -152,18 +154,17 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
     padding: 1.75rem 1.5rem;
     overflow-y: auto;
 
-    /* Custom scrollbar for a premium look */
     &::-webkit-scrollbar {
-        width: 6px;
+        width: 5px;
     }
     &::-webkit-scrollbar-track {
         background: transparent;
     }
     &::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.06);
         border-radius: 999px;
         &:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.12);
         }
     }
 }
@@ -173,18 +174,19 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
     align-items: center;
     gap: 0.75rem;
     margin-bottom: 1.25rem;
-    flex-shrink: 0; // Header stays fixed on top
+    flex-shrink: 0;
 }
 
 .iv-main__title {
-    font-size: 1.15rem;
+    font-size: 1.2rem;
     font-weight: 700;
     color: $text-white;
     margin: 0;
+    letter-spacing: -0.01em;
 }
 
 .iv-pill {
-    font-size: 0.65rem;
+    font-size: 0.62rem;
     font-weight: 600;
     color: $text-dim;
     background: rgba($text-dim, 0.08);
@@ -218,11 +220,11 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
 
     &--open {
         background: $bg-card-open;
-        border-color: rgba($purple, 0.25);
+        border-color: rgba($purple, 0.3);
         border-left: 3px solid $purple;
-        box-shadow: 
+        box-shadow:
             0 8px 30px rgba(0, 0, 0, 0.35),
-            0 0 0 1px rgba($purple, 0.05);
+            0 0 20px rgba($purple, 0.06);
     }
 }
 
@@ -231,7 +233,7 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
     align-items: center;
     gap: 0.75rem;
     width: 100%;
-    padding: 0.85rem 1rem;
+    padding: 0.9rem 1rem;
     border: none;
     background: transparent;
     color: $text-white;
@@ -251,20 +253,20 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 26px;
+    min-width: 28px;
     height: 22px;
     padding: 0 0.4rem;
-    border-radius: 4px;
-    background: rgba($pink, 0.15);
-    border: 1px solid rgba($pink, 0.3);
+    border-radius: 5px;
+    background: rgba($pink, 0.12);
+    border: 1px solid rgba($pink, 0.25);
     color: $pink;
     font-size: 0.65rem;
     font-weight: 700;
     letter-spacing: 0.01em;
 
     &--day {
-        background: rgba($purple, 0.15);
-        border-color: rgba($purple, 0.3);
+        background: rgba($purple, 0.12);
+        border-color: rgba($purple, 0.25);
         color: $purple;
         min-width: 44px;
         border-radius: 999px;
@@ -275,9 +277,9 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
 
 .iv-card__q {
     flex: 1;
-    font-size: 0.82rem;
+    font-size: 0.84rem;
     font-weight: 500;
-    line-height: 1.45;
+    line-height: 1.5;
     color: $text-white;
 }
 
@@ -285,7 +287,7 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
 .iv-chevron {
     flex-shrink: 0;
     color: $text-muted;
-    transition: transform 0.3s $ease;
+    transition: transform 0.3s $ease, color 0.3s $ease;
 
     &--up {
         transform: rotate(180deg);
@@ -295,19 +297,13 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
 
 /* Card Body Content */
 .iv-card__body {
-    padding: 0 1rem 1.15rem calc(26px + 0.75rem + 1rem);
-    animation: slideIn 0.25s $ease;
-}
-
-@keyframes slideIn {
-    from { opacity: 0; transform: translateY(-4px); }
-    to   { opacity: 1; transform: translateY(0); }
+    padding: 0 1rem 1.15rem calc(28px + 0.75rem + 1rem);
 }
 
 .iv-card__section {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: 0.4rem;
 }
 
 .iv-card__divider {
@@ -317,9 +313,9 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .iv-card__text {
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     color: $text-dim;
-    line-height: 1.55;
+    line-height: 1.6;
     margin: 0;
 }
 
@@ -333,8 +329,8 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    padding: 0.15rem 0.45rem;
-    border-radius: 4px;
+    padding: 0.18rem 0.5rem;
+    border-radius: 5px;
 
     &--intention {
         background: rgba($purple, 0.08);
@@ -360,25 +356,26 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.55rem;
 }
 
 .iv-card__task {
     position: relative;
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     color: $text-dim;
-    line-height: 1.5;
-    padding-left: 0.9rem;
+    line-height: 1.55;
+    padding-left: 1rem;
 
     &::before {
         content: "";
         position: absolute;
         left: 0.15rem;
-        top: 0.5rem;
+        top: 0.55rem;
         width: 4px;
         height: 4px;
         border-radius: 50%;
         background: $purple;
+        box-shadow: 0 0 6px rgba($purple, 0.4);
     }
 }
 
@@ -386,11 +383,12 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
    Right Panel
    ═══════════════════════════ */
 .iv-panel {
-    width: 230px;
-    min-width: 230px;
-    background: color.adjust($bg-surface, $lightness: -1.5%);
+    width: 240px;
+    min-width: 240px;
+    background: rgba($bg-surface, 0.8);
+    backdrop-filter: blur(10px);
     border-left: 1px solid $border;
-    padding: 1.75rem 0.95rem;
+    padding: 1.75rem 1rem;
     display: flex;
     flex-direction: column;
     gap: 2rem;
@@ -406,8 +404,8 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
 
 .iv-score__ring {
     position: relative;
-    width: 90px;
-    height: 90px;
+    width: 100px;
+    height: 100px;
 
     svg {
         width: 100%;
@@ -418,16 +416,15 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
 
 .iv-score__track {
     fill: none;
-    stroke: rgba(255, 255, 255, 0.03);
-    stroke-width: 6;
+    stroke: rgba(255, 255, 255, 0.04);
+    stroke-width: 5;
 }
 
 .iv-score__fill {
     fill: none;
-    stroke: $green;
-    stroke-width: 6;
+    stroke: url(#scoreGradient);
+    stroke-width: 5;
     stroke-linecap: round;
-    transition: stroke-dasharray 0.8s $ease;
 }
 
 .iv-score__value {
@@ -439,13 +436,14 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .iv-score__num {
-    font-size: 1.6rem;
+    font-size: 1.8rem;
     font-weight: 800;
     color: $text-white;
+    letter-spacing: -0.02em;
 }
 
 .iv-score__pct {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     font-weight: 600;
     color: $text-muted;
     margin-top: 0.4rem;
@@ -453,7 +451,7 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .iv-score__desc {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     color: $green;
     font-weight: 600;
     text-align: center;
@@ -469,7 +467,7 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
 .iv-gaps__list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.55rem;
 }
 
 .iv-gaps__item {
@@ -477,22 +475,23 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
     align-items: center;
     justify-content: space-between;
     gap: 0.4rem;
-    padding: 0.55rem 0.7rem;
+    padding: 0.6rem 0.75rem;
     border-radius: $radius-md;
     border-left: 3px solid;
     background: $bg-card;
-    border-top: 1px solid rgba(255, 255, 255, 0.01);
-    border-right: 1px solid rgba(255, 255, 255, 0.01);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.01);
+    border-top: 1px solid rgba(255, 255, 255, 0.02);
+    border-right: 1px solid rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
     transition: transform 0.2s $ease, background-color 0.2s $ease;
 
     &:hover {
         transform: translateX(3px);
+        background: $bg-hover;
     }
 }
 
 .iv-gaps__name {
-    font-size: 0.72rem;
+    font-size: 0.73rem;
     font-weight: 500;
     color: $text-white;
     line-height: 1.35;
@@ -510,7 +509,7 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ═══════════════════════════
-   Responsive Design Breakpoints
+   Responsive Design
    ═══════════════════════════ */
 @media (max-width: 1024px) {
     .iv-page {
@@ -553,6 +552,11 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
         gap: 0.25rem;
     }
 
+    .iv-nav__item--active {
+        box-shadow: none;
+        border-radius: $radius-md;
+    }
+
     .iv-main {
         padding: 1.25rem 1rem;
         overflow-y: visible;
@@ -592,16 +596,12 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .success-button {
-    background-color: #10b981 !important;
+    background: #10b981 !important;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3) !important;
     color: white !important;
 }
-

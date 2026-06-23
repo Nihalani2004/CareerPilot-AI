@@ -1,20 +1,81 @@
-.button{
-    border: none;
-    outline: none;
-    padding-inline: 1.5rem;
-    padding-block: 0.75rem;
-    border-radius: 1rem;
-    cursor: pointer;
+/* ═══════════════════════════════════════════════
+   Button System — Premium Glassmorphism
+   ═══════════════════════════════════════════════ */
 
-    transition: all 0.3s ease-in-out;
+.button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  outline: none;
+  padding: 0.75rem 1.75rem;
+  border-radius: var(--radius-lg);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
 
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+  }
 
-    &.primary-button{
-        background-color: #e1034d;
-        color: white;
+  /* ── Primary ── */
+  &.primary-button {
+    background: var(--gradient-primary);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(255, 42, 109, 0.2);
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow:
+        0 8px 25px rgba(255, 42, 109, 0.3),
+        0 0 40px rgba(139, 92, 246, 0.15);
     }
 
-    &:active{
-        transform: scale(1.1);
+    &:active:not(:disabled) {
+      transform: translateY(0) scale(0.98);
     }
+  }
+
+  /* ── Glass ── */
+  &.glass-button {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    color: var(--text-white);
+
+    &:hover:not(:disabled) {
+      background: rgba(20, 22, 38, 0.8);
+      border-color: var(--border-hover);
+      transform: translateY(-1px);
+    }
+  }
+
+  /* ── Success State ── */
+  &.success-button {
+    background: var(--accent-green) !important;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3) !important;
+  }
+}
+
+/* ── Spinner Animation ── */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner-icon {
+  animation: spin 1s linear infinite;
 }
