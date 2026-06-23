@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 /* ═══════════════════════════════════════════════
    Interview Dashboard — Premium SaaS Design
    ═══════════════════════════════════════════════ */
@@ -80,7 +82,7 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
 .iv-sidebar {
     width: 200px;
     min-width: 200px;
-    background: darken($bg-surface, 1.5%);
+    background: color.adjust($bg-surface, $lightness: -1.5%);
     border-right: 1px solid $border;
     padding: 1.75rem 0.85rem;
     display: flex;
@@ -386,7 +388,7 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
 .iv-panel {
     width: 230px;
     min-width: 230px;
-    background: darken($bg-surface, 1.5%);
+    background: color.adjust($bg-surface, $lightness: -1.5%);
     border-left: 1px solid $border;
     padding: 1.75rem 0.95rem;
     display: flex;
