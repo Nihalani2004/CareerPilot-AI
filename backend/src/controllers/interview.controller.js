@@ -40,30 +40,54 @@ const tailoredResumeSchema = z.object({
  */
 
 async function generateInterViewReportController(req, res) {
-    // const resumeFile = req.file
+    try {
+        let resumeText = ""
 
-    const resumeContent = await (new pdfParse.PDFParse(Uint8Array.from(req.file.buffer))).getText()
-    const { selfDescription, jobDescription } = req.body
+        // Parse resume PDF only if the user uploaded one
+        if (req.file && req.file.buffer) {
+            const resumeContent = await (new pdfParse.PDFParse(Uint8Array.from(req.file.buffer))).getText()
+            resumeText = resumeContent.text
+        }
 
-    const interViewReportByAi = await generateInterviewReport({
-        resume: resumeContent.text,
-        selfDescription,
-        jobDescription
-    })
+        const { selfDescription, jobDescription } = req.body
 
-    const interviewReport = await interviewReportModel.create({
-        user: req.user.id || req.user._id,
-        resume: resumeContent.text,
-        selfDescription,
-        jobDescription,
-        ...interViewReportByAi
-    })
+        if (!jobDescription) {
+            return res.status(400).json({
+                message: "Job description is required."
+            })
+        }
 
-    res.status(201).json({
-        message: "Interview report generated successfully",
-        interviewReport: interviewReport
-    })
+        if (!resumeText && !selfDescription) {
+            return res.status(400).json({
+                message: "Please provide either a resume or a self-description."
+            })
+        }
 
+        const interViewReportByAi = await generateInterviewReport({
+            resume: resumeText,
+            selfDescription: selfDescription || "",
+            jobDescription
+        })
+
+        const interviewReport = await interviewReportModel.create({
+            user: req.user.id || req.user._id,
+            resume: resumeText,
+            selfDescription: selfDescription || "",
+            jobDescription,
+            ...interViewReportByAi
+        })
+
+        res.status(201).json({
+            message: "Interview report generated successfully",
+            interviewReport: interviewReport
+        })
+    } catch (error) {
+        console.error("Generate Interview Report Error:", error)
+        res.status(500).json({
+            message: "Failed to generate interview report. Please try again.",
+            error: error.message
+        })
+    }
 }
 
 
