@@ -87,6 +87,8 @@ For production, serve the frontend and API from the same site where possible, se
 
 AI safeguards are enforced per authenticated user and IP address: report generation defaults to 3 requests per user (6 per IP) every 15 minutes and 10 per day; resume PDF requests default to 5 per user (10 per IP) every 15 minutes and 10 fresh generations per day. Cached PDFs do not consume daily PDF credits. Limits, prompt sizes, queue depth, and Puppeteer timeout can be adjusted through the variables above. For multi-instance production deployments, use a shared rate-limit store (such as Redis) in front of the API so short-window limits are global across instances.
 
+Identical interview submissions from the same user are content-hashed and return the existing report instead of calling Gemini again. Simultaneous matching submissions in one API process share the same generation job. The API also exposes `GET /api/health` for readiness monitoring and does not begin listening until MongoDB connects.
+
 #### 3. Install Dependencies & Run
 
 **Start the Backend Server:**

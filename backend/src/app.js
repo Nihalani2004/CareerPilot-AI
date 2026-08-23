@@ -1,6 +1,7 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const cors = require("cors");
+const mongoose = require("mongoose");
 const { getAllowedOrigins } = require("./config/security");
 const { verifyTrustedOrigin } = require("./middlewares/csrf.middleware");
 
@@ -26,6 +27,14 @@ app.use(cors({
     allowedHeaders: ["Content-Type"],
 }))
 app.use(verifyTrustedOrigin);
+
+app.get("/api/health", (req, res) => {
+    const databaseConnected = mongoose.connection.readyState === 1;
+    return res.status(databaseConnected ? 200 : 503).json({
+        status: databaseConnected ? "ok" : "unavailable",
+        database: databaseConnected ? "connected" : "disconnected",
+    });
+});
 
 
 /* require all the routes here  */
