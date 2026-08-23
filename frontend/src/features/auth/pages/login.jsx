@@ -21,6 +21,7 @@ const Login = () => {
 
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
+    const [showPassword, setShowPassword] = useState(false)
 
 
     const handleSubmit = async (e) => {
@@ -72,10 +73,36 @@ const Login = () => {
 
                     <motion.div className="auth-input-group" custom={4} variants={fadeUp} initial="initial" animate="animate">
                         <label htmlFor="password">Password</label>
-                        <input
-                            onChange={(e) => { setPassword(e.target.value) }}
-                            type="password" id="password" name="password" placeholder="Enter your password"
-                        />
+                        <div className="auth-password-field">
+                            <input
+                                onChange={(e) => { setPassword(e.target.value) }}
+                                type={showPassword ? "text" : "password"}
+                                id="password"
+                                name="password"
+                                placeholder="Enter your password"
+                            />
+                            <button
+                                type="button"
+                                className="auth-password-toggle"
+                                onClick={() => setShowPassword((visible) => !visible)}
+                                aria-label={showPassword ? "Hide password" : "Show password"}
+                                aria-pressed={showPassword}
+                            >
+                                {showPassword ? (
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M3 3l18 18" />
+                                        <path d="M10.6 10.6a3 3 0 0 0 4.2 4.2" />
+                                        <path d="M9.9 4.2A10.8 10.8 0 0 1 12 4c5.5 0 9.3 4.6 10 8-.3 1.4-1.2 3.2-2.7 4.7" />
+                                        <path d="M6.1 6.1C4.2 7.7 2.8 10 2 12c.8 3.4 4.5 8 10 8 1.6 0 3.1-.4 4.4-1.1" />
+                                    </svg>
+                                ) : (
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                )}
+                            </button>
+                        </div>
                     </motion.div>
 
                     <motion.button

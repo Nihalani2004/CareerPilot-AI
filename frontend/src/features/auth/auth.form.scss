@@ -138,6 +138,48 @@
 }
 
 /* ── Submit Button (inside auth) ── */
+.auth-password-field {
+  position: relative;
+
+  input {
+    padding-right: 3rem;
+  }
+}
+
+.auth-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.35rem;
+  transform: translateY(-50%);
+  width: 2.4rem;
+  height: 2.4rem;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--text-white);
+    background: rgba(139, 92, 246, 0.14);
+    outline: none;
+  }
+
+  svg {
+    width: 1.15rem;
+    height: 1.15rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
 .auth-form .button {
   margin-top: 0.5rem;
   padding: 0.85rem;
