@@ -27,7 +27,7 @@ const cardStagger = {
 
 const Home = () => {
 
-    const { loading, generateReport, reports, deleteReport } = useInterview()
+    const { loading, generateReport, reports, hasMoreReports, loadMoreReports, deleteReport } = useInterview()
     const [jobDescription, setJobDescription] = useState("")
     const [selfDescription, setSelfDescription] = useState("")
     const resumeInputRef = useRef()
@@ -231,6 +231,15 @@ const Home = () => {
                             </motion.li>
                         ))}
                     </ul>
+                    {hasMoreReports && (
+                        <button
+                            type="button"
+                            className="button secondary-button reports-load-more"
+                            onClick={loadMoreReports}
+                        >
+                            Load More Plans
+                        </button>
+                    )}
                 </motion.section>
             )}
 

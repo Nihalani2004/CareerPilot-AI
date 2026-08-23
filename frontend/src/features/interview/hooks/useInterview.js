@@ -14,7 +14,18 @@ export const useInterview = () => {
         throw new Error("useInterview must be used within an InterviewProvider")
     }
 
-    const { loading, setLoading, report, setReport, reports, setReports } = context
+    const {
+        loading,
+        setLoading,
+        report,
+        setReport,
+        reports,
+        setReports,
+        nextReportsCursor,
+        setNextReportsCursor,
+        hasMoreReports,
+        setHasMoreReports,
+    } = context
 
     const generateReport = async ({ jobDescription, selfDescription, resumeFile }) => {
         setLoading(true)
@@ -46,19 +57,36 @@ export const useInterview = () => {
         }
     }
 
-    const getReports = async () => {
+    const getReports = async ({ cursor, append = false } = {}) => {
         setLoading(true)
-        let response = null
         try {
-            response = await getAllInterviewReports()
-            setReports(response.interviewReports)
+            const response = await getAllInterviewReports({ cursor })
+            setReports((currentReports) => append
+                ? [...currentReports, ...response.interviewReports]
+                : response.interviewReports
+            )
+            setNextReportsCursor(response.pagination.nextCursor)
+            setHasMoreReports(response.pagination.hasNextPage)
             return response.interviewReports
         } catch (error) {
             console.log(error)
+            if (!append) {
+                setReports([])
+                setNextReportsCursor(null)
+                setHasMoreReports(false)
+            }
             return []
         } finally {
             setLoading(false)
         }
+    }
+
+    const loadMoreReports = async () => {
+        if (!hasMoreReports || !nextReportsCursor) {
+            return []
+        }
+
+        return getReports({ cursor: nextReportsCursor, append: true })
     }
 
     const getResumePdf = async (interviewReportId, onStartDownloading) => {
@@ -153,6 +181,6 @@ export const useInterview = () => {
         }
     }, [interviewId])
 
-    return { loading, report, reports, generateReport, getReportById, getReports, getResumePdf, deleteReport }
+    return { loading, report, reports, hasMoreReports, generateReport, getReportById, getReports, loadMoreReports, getResumePdf, deleteReport }
 
 }
