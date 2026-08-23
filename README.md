@@ -1,70 +1,239 @@
-# CareerPilot AI ✈️💼
+# CareerPilot AI
 
-CareerPilot AI is an advanced, AI-powered interview preparation agent and ATS-optimized resume tailor. By analyzing a target job description alongside a candidate's resume or self-description, it generates a comprehensive preparation report and a customized resume.
+CareerPilot AI is a full-stack, AI-powered career-preparation platform. It transforms a candidate's resume or profile and a target job description into an interview-readiness report, including a match score, skill gaps, targeted questions, and a preparation roadmap. Users can also generate an ATS-oriented resume PDF from a saved report.
 
-## 🌟 Key Features
+## Highlights
 
-* **ATS Resume Tailoring & PDF Export:** Rewrites and aligns candidate resume points to emphasize relevant skills and action verbs matching the target job description. The tailored resume is rendered into a clean, print-ready, ATS-compliant PDF via a headless browser (`puppeteer`) and cached for fast download.
-* **Intelligent Profile Alignment:** Analyzes resume content and job descriptions using Gemini 2.5 Flash to compute an accurate **Match Score** and identify critical **Skill Gaps** categorized by severity.
-* **Custom Interview Question Generation:** Produces custom technical and behavioral interview questions tailored to the candidate's gaps and target role. Each question includes:
-  * **Interviewer Intention:** The rationale behind asking the question.
-  * **Suggested Model Answer:** A step-by-step approach to answer effectively.
-* **Step-by-Step Preparation Roadmap:** Provides a personalized, day-by-day study and action plan to guide the candidate's preparation leading up to their interview.
-* **Secure Authentication:** Features full signup/login workflows using JWT cookies and bcrypt password encryption, with server-side token blacklisting for secure logouts.
+- Generate structured, role-specific interview reports with **Google Gemini 2.5 Flash**.
+- Extract text from uploaded resumes with `pdf-parse`.
+- Produce a match score, skill-gap analysis, technical and behavioral questions, and a day-wise preparation plan.
+- Generate and cache resume PDFs with **Puppeteer** to avoid repeat rendering work.
+- Reuse an existing report for identical candidate/job submissions through SHA-256 input hashing and in-flight request coalescing.
+- Protect costly AI and PDF operations with per-user and per-IP rate limits, daily MongoDB-backed quotas, bounded queues, input limits, and rendering timeouts.
+- Use secure JWT cookie authentication, token blacklisting, trusted-origin verification, CORS allowlists, and ownership-scoped data access.
+- Load report history through cursor pagination and provide an API health endpoint for readiness monitoring.
 
 ---
 
-## 🛠️ Technology Stack
+## High-Level Architecture
+
+```mermaid
+flowchart TB
+    classDef client fill:#E8F0FE,stroke:#2563EB,color:#172554,stroke-width:2px
+    classDef api fill:#ECFDF5,stroke:#059669,color:#064E3B,stroke-width:2px
+    classDef guard fill:#FFF7ED,stroke:#EA580C,color:#7C2D12,stroke-width:2px
+    classDef service fill:#F5F3FF,stroke:#7C3AED,color:#3B0764,stroke-width:2px
+    classDef data fill:#FEF2F2,stroke:#DC2626,color:#7F1D1D,stroke-width:2px
+    classDef external fill:#FFFBEB,stroke:#CA8A04,color:#713F12,stroke-width:2px
+
+    subgraph Browser[Candidate Browser]
+        React[React + Vite SPA\nLogin • Home • Interview Report]:::client
+        ApiClient[Axios API Client\nCookie credentials]:::client
+        React --> ApiClient
+    end
+
+    subgraph API[Node.js / Express API]
+        Security[Security Boundary\nCORS • HttpOnly JWT cookies\nTrusted-origin check • Payload limits]:::guard
+        Auth[Auth Router\nRegister • Login • Logout • Get Me]:::api
+        Interview[Interview Router\nReports • PDF export • History]:::api
+        AuthGuard[Auth + Ownership Guard]:::guard
+        Limits[AI Protection\nUser/IP rate limits • Daily quotas\nBounded work queues]:::guard
+        Cache[Generation Optimization\nSHA-256 request cache\nIn-flight coalescing • PDF cache]:::service
+        Pipeline[Interview Pipeline\nResume text extraction • Input validation\nGemini structured generation]:::service
+        Pdf[Resume PDF Pipeline\nGemini HTML • Puppeteer render]:::service
+        Health[Readiness Endpoint\nGET /api/health]:::api
+
+        Security --> Auth
+        Security --> Interview
+        Auth --> AuthGuard
+        Interview --> AuthGuard --> Limits
+        Limits --> Cache
+        Cache --> Pipeline
+        Cache --> Pdf
+    end
+
+    subgraph Storage[MongoDB Atlas]
+        Users[(Users)]:::data
+        Reports[(Interview Reports\nInput hashes • PDF cache)]:::data
+        Usage[(AI Usage Credits)]:::data
+        Blacklist[(Blacklisted Tokens)]:::data
+    end
+
+    Gemini[Google Gemini 2.5 Flash]:::external
+    Puppeteer[Puppeteer / Headless Chrome]:::external
+
+    ApiClient -->|HTTPS requests| Security
+    Auth --> Users
+    AuthGuard --> Blacklist
+    Limits --> Usage
+    Cache --> Reports
+    Pipeline --> Gemini
+    Pdf --> Gemini
+    Pdf --> Puppeteer
+    Pipeline --> Reports
+    Pdf --> Reports
+    Health --> Storage
+```
+
+### Request Flow
+
+1. The React client sends an authenticated request with the candidate profile, job description, and optional resume upload.
+2. Express applies CORS, trusted-origin, cookie, authentication, ownership, rate-limit, and payload-size checks.
+3. For interview generation, the API checks the SHA-256 input hash. An existing report is returned immediately; matching in-flight requests share one generation job.
+4. New work consumes a daily AI credit, enters the bounded Gemini queue, and persists the generated report to MongoDB.
+5. For resume export, a cached PDF is returned when available. Otherwise, the API uses the bounded PDF queue, Gemini-generated HTML, and Puppeteer to render and cache the PDF.
+
+---
+
+## Core Components
+
+| Layer | Components | Responsibility |
+| --- | --- | --- |
+| Frontend | React, React Router, Context API, SCSS, Framer Motion | Authentication UI, report creation, report history, PDF download, and interactive report view. |
+| API | Node.js, Express, Axios-compatible REST endpoints | Routes requests, enforces security controls, and exposes application health. |
+| AI | Google GenAI SDK, Zod, Zod-to-JSON-Schema | Requests schema-constrained Gemini outputs for interview reports and resume HTML. |
+| Document Processing | Multer, PDF-Parse, Puppeteer | Accepts resume uploads, extracts text, renders ATS-oriented PDF files, and caches generated output. |
+| Data | MongoDB, Mongoose | Stores users, reports, cached PDFs, AI usage credits, and blacklisted tokens. |
+| Protection | JWT, bcryptjs, CORS, rate limiting, queues | Secures sessions and controls AI/PDF cost and resource consumption. |
+
+---
+
+## Project Structure
+
+```text
+CareerPilot-AI/
+├── backend/
+│   ├── server.js                         # Starts only after MongoDB is ready
+│   ├── src/
+│   │   ├── app.js                        # Express app, CORS, health endpoint, error handling
+│   │   ├── config/
+│   │   │   ├── ai-usage.js               # AI rate, quota, queue, and input configuration
+│   │   │   ├── database.js               # MongoDB connection and optional DNS configuration
+│   │   │   └── security.js               # Cookie and trusted-origin configuration
+│   │   ├── controllers/
+│   │   │   ├── auth.controller.js
+│   │   │   └── interview.controller.js
+│   │   ├── middlewares/
+│   │   │   ├── ai-rate-limit.middleware.js
+│   │   │   ├── auth.middleware.js
+│   │   │   ├── csrf.middleware.js
+│   │   │   ├── file.middleware.js
+│   │   │   └── rate-limit.middleware.js
+│   │   ├── models/
+│   │   │   ├── aiUsage.model.js
+│   │   │   ├── blacklist.model.js
+│   │   │   ├── interviewReport.model.js
+│   │   │   └── user.model.js
+│   │   ├── routes/
+│   │   │   ├── auth.routes.js
+│   │   │   └── interview.routes.js
+│   │   └── services/
+│   │       ├── ai.service.js             # Gemini and Puppeteer workflows
+│   │       ├── ai-usage.service.js       # Persistent daily credits
+│   │       ├── interview-cache.service.js# Duplicate generation avoidance
+│   │       ├── report-pagination.service.js
+│   │       └── work-queue.service.js     # Bounded Gemini/PDF work queues
+│   └── test/                             # Node.js test suite
+├── frontend/
+│   └── src/
+│       ├── features/auth/                # Login, registration, and auth state
+│       ├── features/interview/           # Report creation, history, PDF download, views
+│       ├── components/                   # Shared visual components
+│       └── app.routes.jsx                # Application routes
+└── README.md
+```
+
+---
+
+## Technology Stack
 
 ### Backend
-* **Runtime:** Node.js
-* **Framework:** Express.js
-* **Database:** MongoDB (using Mongoose ODM)
-* **AI Integration:** Google GenAI SDK (`@google/genai`)
-* **PDF Rendering:** Puppeteer (headless Chrome)
-* **Parser:** PDF-Parse (for processing uploaded resumes)
-* **Validation:** Zod (for structured JSON schemas)
-* **Auth:** JSON Web Tokens (JWT), Cookies, and Bcryptjs
+
+- Node.js and Express
+- MongoDB and Mongoose
+- Google GenAI SDK (`@google/genai`)
+- Zod and Zod-to-JSON-Schema
+- Puppeteer, PDF-Parse, and Multer
+- JWT, bcryptjs, cookie-parser, and CORS
 
 ### Frontend
-* **Core:** React (Vite setup)
-* **Styling:** Custom SCSS
-* **Routing:** React Router DOM
-* **State Management:** React Context API
+
+- React and Vite
+- React Router
+- Axios
+- Context API
+- SCSS and Framer Motion
 
 ---
 
-## 🚀 Getting Started
+## API Overview
 
-Follow these steps to run the application locally on your machine.
+| Method | Endpoint | Authentication | Description |
+| --- | --- | --- | --- |
+| `GET` | `/api/health` | No | Reports API/database readiness. |
+| `POST` | `/api/auth/register` | No | Creates an account. |
+| `POST` | `/api/auth/login` | No | Starts a secure cookie-based session. |
+| `POST` | `/api/auth/logout` | Yes | Blacklists the current token and clears its cookie. |
+| `GET` | `/api/auth/get-me` | Yes | Returns the current user. |
+| `POST` | `/api/interview/` | Yes | Generates or reuses an interview report. |
+| `GET` | `/api/interview/` | Yes | Returns cursor-paginated report history. |
+| `GET` | `/api/interview/report/:interviewId` | Yes | Returns an ownership-scoped report. |
+| `DELETE` | `/api/interview/report/:interviewId` | Yes | Deletes an ownership-scoped report. |
+| `POST` | `/api/interview/resume/pdf/:interviewReportId` | Yes | Returns a cached or newly generated resume PDF. |
+
+For history pagination, use `limit` (1–50; default 12) and the `nextCursor` returned by the previous response.
+
+---
+
+## Security, Reliability, and Cost Controls
+
+- **Cookie security:** `httpOnly`, `secure`, `sameSite`, expiry, and matching logout-clear options are configured from environment variables.
+- **Trusted browser requests:** CORS uses an allowlist and unsafe production requests require a trusted `Origin` header.
+- **Ownership enforcement:** Report retrieval, deletion, and PDF export are scoped to the authenticated user.
+- **AI abuse prevention:** Separate user/IP limits protect report and PDF endpoints; MongoDB-backed daily credits persist across restarts.
+- **Input and rendering protection:** JSON and upload limits, character caps, Puppeteer request blocking, rendering timeout, and bounded queues prevent resource exhaustion.
+- **Duplicate work prevention:** Input-hash lookup and in-flight coalescing avoid redundant Gemini calls; generated PDFs are cached with their report.
+- **Operational readiness:** The server waits for MongoDB before listening and exposes `GET /api/health`.
+
+> For multi-instance production deployments, use a shared rate-limit store such as Redis to make short-window request limits global across API instances.
+
+---
+
+## Getting Started
 
 ### Prerequisites
-* [Node.js](https://nodejs.org/) installed (v18+ recommended)
-* A [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) account or a local MongoDB database instance
-* A [Google Gemini API Key](https://ai.google.dev/)
 
-### Setup Instructions
+- Node.js 18 or later
+- MongoDB Atlas account or local MongoDB instance
+- Google Gemini API key
 
-#### 1. Clone the Repository
+### 1. Clone
+
 ```bash
 git clone https://github.com/Nihalani2004/CareerPilot-AI.git
 cd CareerPilot-AI
 ```
 
-#### 2. Configure Backend `.env`
-Create a `.env` file in the `backend` directory:
+### 2. Configure `backend/.env`
+
 ```env
-PORT=5000
+PORT=3000
 MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret_key
+JWT_SECRET=use_a_long_random_secret
 GOOGLE_GENAI_API_KEY=your_gemini_api_key
 FRONTEND_URL=http://localhost:5173
+
 NODE_ENV=development
 JWT_EXPIRES_IN=1d
+
 AUTH_COOKIE_MAX_AGE_MS=86400000
 AUTH_COOKIE_SAME_SITE=lax
 AUTH_COOKIE_SECURE=false
+
+# Optional: use public resolvers if a local DNS server blocks MongoDB SRV lookups.
 MONGODB_DNS_SERVERS=1.1.1.1,8.8.8.8
+
+# AI usage defaults
 AI_REPORT_RATE_LIMIT_WINDOW_MS=900000
 AI_REPORT_RATE_LIMIT_MAX=3
 AI_REPORT_IP_RATE_LIMIT_MAX=6
@@ -83,27 +252,48 @@ PUPPETEER_MAX_QUEUED=4
 PUPPETEER_TIMEOUT_MS=30000
 ```
 
-For production, serve the frontend and API from the same site where possible, set `NODE_ENV=production`, use HTTPS, and set `AUTH_COOKIE_SECURE=true`. If the frontend must be hosted on a different site, set `AUTH_COOKIE_SAME_SITE=none` together with `AUTH_COOKIE_SECURE=true`. Set `TRUST_PROXY=true` when HTTPS is terminated by a reverse proxy. The frontend can use `VITE_API_BASE_URL` to point at a deployed API; it defaults to `http://localhost:3000` during local development.
+For production, use HTTPS with `NODE_ENV=production` and `AUTH_COOKIE_SECURE=true`. When the frontend is hosted on a different site, set `AUTH_COOKIE_SAME_SITE=none` together with `AUTH_COOKIE_SECURE=true`. Set `TRUST_PROXY=true` when TLS is terminated by a reverse proxy.
 
-AI safeguards are enforced per authenticated user and IP address: report generation defaults to 3 requests per user (6 per IP) every 15 minutes and 10 per day; resume PDF requests default to 5 per user (10 per IP) every 15 minutes and 10 fresh generations per day. Cached PDFs do not consume daily PDF credits. Limits, prompt sizes, queue depth, and Puppeteer timeout can be adjusted through the variables above. For multi-instance production deployments, use a shared rate-limit store (such as Redis) in front of the API so short-window limits are global across instances.
+If the frontend calls a deployed API, add `VITE_API_BASE_URL=https://your-api.example.com` to `frontend/.env`. It defaults to `http://localhost:3000` for local development.
 
-Identical interview submissions from the same user are content-hashed and return the existing report instead of calling Gemini again. Simultaneous matching submissions in one API process share the same generation job. The API also exposes `GET /api/health` for readiness monitoring and does not begin listening until MongoDB connects.
+### 3. Install and Run
 
-#### 3. Install Dependencies & Run
+Start the backend:
 
-**Start the Backend Server:**
 ```bash
 cd backend
 npm install
 npm run dev
 ```
 
-**Start the Frontend App:**
-Open a new terminal session, then:
+Start the frontend in another terminal:
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-The frontend application should now be running at `http://localhost:5173`.
+Open `http://localhost:5173`.
+
+### 4. Test
+
+```bash
+cd backend
+npm test
+```
+
+---
+
+## Notes on Performance
+
+- Repeated identical submissions reuse the stored report instead of spending another Gemini generation.
+- The report-history API uses cursor pagination and excludes resume text, question payloads, and cached PDF bytes from summary responses.
+- A report-detail response excludes the cached PDF buffer; PDF bytes are sent only by the PDF download endpoint.
+- Generated resume PDFs are stored with their report for fast repeat downloads.
+
+---
+
+## License
+
+ISC
