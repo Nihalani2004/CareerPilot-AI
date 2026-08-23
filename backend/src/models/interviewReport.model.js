@@ -138,7 +138,7 @@ const interviewReportSchema = new mongoose.Schema({
     timestamps: true
 })
 
-interviewReportSchema.index({ user: 1, createdAt: -1 });
+interviewReportSchema.index({ user: 1, createdAt: -1, _id: -1 });
 interviewReportSchema.index(
     { user: 1, inputHash: 1 },
     {
