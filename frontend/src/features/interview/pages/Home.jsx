@@ -25,20 +25,38 @@ const cardStagger = {
     }),
 };
 
+const formatFileSize = (bytes) => {
+    if (!bytes) return "0 KB";
+    const units = ["B", "KB", "MB"];
+    const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+    return `${(bytes / (1024 ** index)).toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
+};
+
 const Home = () => {
 
     const { loading, generateReport, reports, hasMoreReports, loadMoreReports, deleteReport } = useInterview()
     const [jobDescription, setJobDescription] = useState("")
     const [selfDescription, setSelfDescription] = useState("")
+    const [resumeFile, setResumeFile] = useState(null)
     const resumeInputRef = useRef()
 
     const navigate = useNavigate()
 
     const handleGenerateReport = async () => {
-        const resumeFile = resumeInputRef.current.files[0]
         const data = await generateReport({ jobDescription, selfDescription, resumeFile })
         if (data && data._id) {
             navigate(`/interview/${data._id}`)
+        }
+    }
+
+    const handleResumeFileChange = (event) => {
+        setResumeFile(event.target.files?.[0] || null)
+    }
+
+    const removeResumeFile = () => {
+        setResumeFile(null)
+        if (resumeInputRef.current) {
+            resumeInputRef.current.value = ""
         }
     }
 
@@ -135,7 +153,32 @@ const Home = () => {
                                 name="resume"
                                 id="resume"
                                 accept=".pdf,.docx"
+                                onChange={handleResumeFileChange}
                             />
+                            {resumeFile && (
+                                <div className="home__uploaded-file" role="status">
+                                    <svg className="home__uploaded-file-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
+                                        <path d="M14 2v6h6" />
+                                        <path d="M8 14h8M8 18h5" />
+                                    </svg>
+                                    <div className="home__uploaded-file-details">
+                                        <span className="home__uploaded-file-name" title={resumeFile.name}>{resumeFile.name}</span>
+                                        <span className="home__uploaded-file-size">{formatFileSize(resumeFile.size)}</span>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="home__uploaded-file-remove"
+                                        onClick={removeResumeFile}
+                                        aria-label={`Remove ${resumeFile.name}`}
+                                        title="Remove uploaded resume"
+                                    >
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <path d="M18 6 6 18M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         {/* OR Divider */}
