@@ -4,6 +4,12 @@ const interviewReportModel = require("../models/interviewReport.model")
 const { getAiUsageConfig } = require("../config/ai-usage")
 const { ACTIONS, reserveDailyAiUsage } = require("../services/ai-usage.service")
 const { createInterviewInputHash, getOrCreateInterviewReport } = require("../services/interview-cache.service")
+const {
+    buildCursorFilter,
+    decodeReportCursor,
+    encodeReportCursor,
+    parseReportPageLimit,
+} = require("../services/report-pagination.service")
 
 function sendGenerationError(res, error, fallbackMessage) {
     const statusCode = error.statusCode || 500;
@@ -154,13 +160,8 @@ async function getInterviewReportByIdController(req, res) {
     const { interviewId } = req.params
     const interviewReport = await interviewReportModel.findOne({
         _id: interviewId,
-        $or: [
-            { user: req.user.id },
-            { user: req.user._id },
-            { user: null },
-            { user: { $exists: false } }
-        ]
-    })
+        user: req.user.id || req.user._id,
+    }).select("-resumePdfCache").lean()
 
     if (!interviewReport) {
         return res.status(404).json({
@@ -176,19 +177,30 @@ async function getInterviewReportByIdController(req, res) {
 
 
 async function getAllInterviewReportsController(req, res) {
-    const interviewReports = await interviewReportModel.find({
-        $or: [
-            { user: req.user.id },
-            { user: req.user._id },
-            { user: null },
-            { user: { $exists: false } }
-        ]
-    }).sort({ createdAt: -1 }).select("-resume -selfDescription -jobDescription -__v -technicalQuestions -behavioralQuestions -skillGaps -preparationPlan -resumePdfCache")
+    try {
+        const limit = parseReportPageLimit(req.query.limit);
+        const cursor = decodeReportCursor(req.query.cursor);
+        const interviewReports = await interviewReportModel.find({
+            user: req.user.id || req.user._id,
+            ...buildCursorFilter(cursor),
+        })
+            .sort({ createdAt: -1, _id: -1 })
+            .limit(limit + 1)
+            .select("-resume -selfDescription -jobDescription -__v -technicalQuestions -behavioralQuestions -skillGaps -preparationPlan -resumePdfCache")
+            .lean()
 
-    res.status(200).json({
-        message: "Interview reports fetched successfully.",
-        interviewReports
-    })
+        const hasNextPage = interviewReports.length > limit;
+        const reports = hasNextPage ? interviewReports.slice(0, limit) : interviewReports;
+        const nextCursor = hasNextPage ? encodeReportCursor(reports.at(-1)) : null;
+
+        return res.status(200).json({
+            message: "Interview reports fetched successfully.",
+            interviewReports: reports,
+            pagination: { limit, hasNextPage, nextCursor },
+        })
+    } catch (error) {
+        return sendGenerationError(res, error, "Failed to fetch interview reports.")
+    }
 }
 
 
@@ -413,12 +425,7 @@ async function deleteInterviewReportController(req, res) {
         const { interviewId } = req.params
         const interviewReport = await interviewReportModel.findOneAndDelete({
             _id: interviewId,
-            $or: [
-                { user: req.user.id },
-                { user: req.user._id },
-                { user: null },
-                { user: { $exists: false } }
-            ]
+            user: req.user.id || req.user._id,
         })
 
         if (!interviewReport) {
