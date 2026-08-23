@@ -3,6 +3,7 @@ const { generateInterviewReport, generateResumePdf } = require("../services/ai.s
 const interviewReportModel = require("../models/interviewReport.model")
 const { getAiUsageConfig } = require("../config/ai-usage")
 const { ACTIONS, reserveDailyAiUsage } = require("../services/ai-usage.service")
+const { createInterviewInputHash, getOrCreateInterviewReport } = require("../services/interview-cache.service")
 
 function sendGenerationError(res, error, fallbackMessage) {
     const statusCode = error.statusCode || 500;
@@ -100,28 +101,42 @@ async function generateInterViewReportController(req, res) {
             })
         }
 
-        await reserveDailyAiUsage({
-            userId: req.user.id || req.user._id,
-            action: ACTIONS.INTERVIEW_REPORT,
-        })
-
-        const interViewReportByAi = await generateInterviewReport({
+        const userId = req.user.id || req.user._id;
+        const inputHash = createInterviewInputHash({
             resume: resumeText,
             selfDescription,
-            jobDescription
-        })
-
-        const interviewReport = await interviewReportModel.create({
-            user: req.user.id || req.user._id,
-            resume: resumeText,
-            selfDescription: selfDescription || "",
             jobDescription,
-            ...interViewReportByAi
-        })
+        });
+        const { interviewReport, reused } = await getOrCreateInterviewReport({
+            userId,
+            inputHash,
+            generateReport: async () => {
+                await reserveDailyAiUsage({
+                    userId,
+                    action: ACTIONS.INTERVIEW_REPORT,
+                });
 
-        res.status(201).json({
-            message: "Interview report generated successfully",
-            interviewReport: interviewReport
+                const interViewReportByAi = await generateInterviewReport({
+                    resume: resumeText,
+                    selfDescription,
+                    jobDescription,
+                });
+
+                return interviewReportModel.create({
+                    user: userId,
+                    inputHash,
+                    resume: resumeText,
+                    selfDescription,
+                    jobDescription,
+                    ...interViewReportByAi,
+                });
+            },
+        });
+
+        res.status(reused ? 200 : 201).json({
+            message: reused ? "Existing interview report returned." : "Interview report generated successfully",
+            cached: reused,
+            interviewReport,
         })
     } catch (error) {
         console.error("Generate Interview Report Error:", error)

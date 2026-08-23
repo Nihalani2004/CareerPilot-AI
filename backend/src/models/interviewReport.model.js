@@ -122,6 +122,10 @@ const interviewReportSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "users"
     },
+    inputHash: {
+        type: String,
+        default: null,
+    },
     title: {
         type: String,
         required: [true, "Job title is required"]
@@ -134,6 +138,14 @@ const interviewReportSchema = new mongoose.Schema({
     timestamps: true
 })
 
+interviewReportSchema.index({ user: 1, createdAt: -1 });
+interviewReportSchema.index(
+    { user: 1, inputHash: 1 },
+    {
+        unique: true,
+        partialFilterExpression: { inputHash: { $type: "string" } },
+    }
+);
 
 const interviewReportModel = mongoose.model('InterviewReport', interviewReportSchema);
 
