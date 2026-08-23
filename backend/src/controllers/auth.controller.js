@@ -2,6 +2,11 @@ const userModel = require('../models/user.model');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const tokenBlacklistModel = require('../models/blacklist.model');
+const {
+    getAuthCookieClearOptions,
+    getAuthCookieOptions,
+    getJwtExpiresIn,
+} = require('../config/security');
 
 /**
  * @name registerUserController
@@ -38,9 +43,9 @@ async function registerUserController(req,res){
         const token =  jwt.sign(
             {id: user._id , username : user.username},
             process.env.JWT_SECRET,
-            {expiresIn : "1d"}
+            {expiresIn : getJwtExpiresIn()}
         )
-        res.cookie("token", token)
+        res.cookie("token", token, getAuthCookieOptions())
 
         res.status(201).json({
             message : "User registered successfully",
@@ -88,9 +93,9 @@ async function loginUserController(req,res){
         const token =  jwt.sign(
             {id: user._id , username : user.username},
             process.env.JWT_SECRET,
-            {expiresIn : "1d"}
+            {expiresIn : getJwtExpiresIn()}
         )
-        res.cookie("token", token)
+        res.cookie("token", token, getAuthCookieOptions())
         res.status(200).json({
             message : "User logged in successfully",
             user:{
@@ -115,10 +120,13 @@ async function logoutUserController(req,res){
         const token = req.cookies.token;
 
         if(token){
-            await tokenBlacklistModel.create({token});
+            await tokenBlacklistModel.create({
+                token,
+                expiresAt: new Date(req.user.exp * 1000),
+            });
         }
 
-        res.clearCookie("token");
+        res.clearCookie("token", getAuthCookieClearOptions());
         res.status(200).json({
             message : "User logged out successfully"
         })
