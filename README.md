@@ -65,9 +65,27 @@ AUTH_COOKIE_MAX_AGE_MS=86400000
 AUTH_COOKIE_SAME_SITE=lax
 AUTH_COOKIE_SECURE=false
 MONGODB_DNS_SERVERS=1.1.1.1,8.8.8.8
+AI_REPORT_RATE_LIMIT_WINDOW_MS=900000
+AI_REPORT_RATE_LIMIT_MAX=3
+AI_REPORT_IP_RATE_LIMIT_MAX=6
+AI_REPORT_DAILY_LIMIT=10
+AI_PDF_RATE_LIMIT_WINDOW_MS=900000
+AI_PDF_RATE_LIMIT_MAX=5
+AI_PDF_IP_RATE_LIMIT_MAX=10
+AI_PDF_DAILY_LIMIT=10
+AI_MAX_RESUME_CHARACTERS=15000
+AI_MAX_JOB_DESCRIPTION_CHARACTERS=8000
+AI_MAX_SELF_DESCRIPTION_CHARACTERS=4000
+GEMINI_MAX_CONCURRENT=2
+GEMINI_MAX_QUEUED=8
+PUPPETEER_MAX_CONCURRENT=1
+PUPPETEER_MAX_QUEUED=4
+PUPPETEER_TIMEOUT_MS=30000
 ```
 
 For production, serve the frontend and API from the same site where possible, set `NODE_ENV=production`, use HTTPS, and set `AUTH_COOKIE_SECURE=true`. If the frontend must be hosted on a different site, set `AUTH_COOKIE_SAME_SITE=none` together with `AUTH_COOKIE_SECURE=true`. Set `TRUST_PROXY=true` when HTTPS is terminated by a reverse proxy. The frontend can use `VITE_API_BASE_URL` to point at a deployed API; it defaults to `http://localhost:3000` during local development.
+
+AI safeguards are enforced per authenticated user and IP address: report generation defaults to 3 requests per user (6 per IP) every 15 minutes and 10 per day; resume PDF requests default to 5 per user (10 per IP) every 15 minutes and 10 fresh generations per day. Cached PDFs do not consume daily PDF credits. Limits, prompt sizes, queue depth, and Puppeteer timeout can be adjusted through the variables above. For multi-instance production deployments, use a shared rate-limit store (such as Redis) in front of the API so short-window limits are global across instances.
 
 #### 3. Install Dependencies & Run
 

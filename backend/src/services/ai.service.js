@@ -2,10 +2,24 @@ const { GoogleGenAI } = require("@google/genai");
 const { z } = require("zod");
 const { zodToJsonSchema } = require("zod-to-json-schema");
 const puppeteer = require("puppeteer");
+const { getAiUsageConfig } = require("../config/ai-usage");
+const { WorkQueue } = require("./work-queue.service");
 
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GOOGLE_GENAI_API_KEY,
+});
+
+const usageConfig = getAiUsageConfig();
+const geminiQueue = new WorkQueue({
+    resourceName: "AI generation service",
+    maxConcurrent: usageConfig.queue.geminiMaxConcurrent,
+    maxQueued: usageConfig.queue.geminiMaxQueued,
+});
+const pdfQueue = new WorkQueue({
+    resourceName: "PDF generation service",
+    maxConcurrent: usageConfig.queue.pdfMaxConcurrent,
+    maxQueued: usageConfig.queue.pdfMaxQueued,
 });
 
 
@@ -48,15 +62,14 @@ async function generateInterviewReport({ resume, selfDescription, jobDescription
     Job Description: ${jobDescription}
     `
 
-    const response = await ai.models.generateContent({
+    const response = await geminiQueue.run(() => ai.models.generateContent({
         model: "gemini-2.5-flash",
         contents: prompt,
         config: {
             responseMimeType: "application/json",
             responseSchema: zodToJsonSchema(interviewReportSchema)
         }
-
-    })
+    }));
 
     const result = JSON.parse(response.text);
     // console.log(result);
@@ -69,15 +82,31 @@ async function generatePdfFromHtml(htmlContent) {
     try {
         browser = await puppeteer.launch({
             headless: true,
+            timeout: usageConfig.queue.pdfTimeoutMs,
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         })
         const page = await browser.newPage();
-        await page.setContent(htmlContent, { waitUntil: "networkidle0" })
+        page.setDefaultNavigationTimeout(usageConfig.queue.pdfTimeoutMs);
+        page.setDefaultTimeout(usageConfig.queue.pdfTimeoutMs);
+        await page.setRequestInterception(true);
+        page.on("request", (request) => {
+            const url = request.url();
+            if (url.startsWith("data:") || url.startsWith("about:")) {
+                return request.continue();
+            }
+
+            return request.abort("blockedbyclient");
+        });
+        await page.setContent(htmlContent, {
+            waitUntil: "load",
+            timeout: usageConfig.queue.pdfTimeoutMs,
+        })
 
         const pdfBuffer = await page.pdf({
             format: "A4",
             printBackground: true,
             preferCSSPageSize: false,
+            timeout: usageConfig.queue.pdfTimeoutMs,
             margin: {
                 top: "10mm",
                 bottom: "10mm",
@@ -149,14 +178,14 @@ ATS RULES:
 
 Return a JSON object with one field "html" containing the complete HTML string.`
 
-    const response = await ai.models.generateContent({
+    const response = await geminiQueue.run(() => ai.models.generateContent({
         model: "gemini-2.5-flash",
         contents: prompt,
         config: {
             responseMimeType: "application/json",
             responseSchema: zodToJsonSchema(resumePdfSchema),
         }
-    })
+    }));
     const jsonContent = JSON.parse(response.text)
 
     // Inject page-break CSS programmatically to guarantee correct behavior.
@@ -234,7 +263,7 @@ Return a JSON object with one field "html" containing the complete HTML string.`
         html = pageBreakCSS + html
     }
 
-    const pdfBuffer = await generatePdfFromHtml(html)
+    const pdfBuffer = await pdfQueue.run(() => generatePdfFromHtml(html));
 
     return pdfBuffer
 }

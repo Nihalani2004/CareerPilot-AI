@@ -11,7 +11,7 @@ if (process.env.TRUST_PROXY === "true") {
     app.set("trust proxy", 1);
 }
 
-app.use(express.json());
+app.use(express.json({ limit: "100kb" }));
 app.use(cookieParser());
 app.use(cors({
     origin(origin, callback) {
@@ -39,6 +39,10 @@ app.use("/api/interview", interviewRouter)
 app.use((error, req, res, next) => {
     if (error.message === "Request origin is not allowed by CORS.") {
         return res.status(403).json({ message: error.message });
+    }
+
+    if (error.type === "entity.too.large" || error.code === "LIMIT_FILE_SIZE") {
+        return res.status(413).json({ message: "Request payload is too large." });
     }
 
     console.error("Unhandled application error:", error);

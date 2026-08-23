@@ -1,37 +1,54 @@
 const pdfParse = require("pdf-parse")
 const { generateInterviewReport, generateResumePdf } = require("../services/ai.service")
 const interviewReportModel = require("../models/interviewReport.model")
-const PDFDocument = require("pdfkit")
-const { GoogleGenAI } = require("@google/genai")
-const { z } = require("zod")
-const { zodToJsonSchema } = require("zod-to-json-schema")
+const { getAiUsageConfig } = require("../config/ai-usage")
+const { ACTIONS, reserveDailyAiUsage } = require("../services/ai-usage.service")
 
-const ai = new GoogleGenAI({
-    apiKey: process.env.GOOGLE_GENAI_API_KEY,
-})
+function sendGenerationError(res, error, fallbackMessage) {
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
+        message: error.statusCode ? error.message : fallbackMessage,
+    });
+}
 
-const tailoredResumeSchema = z.object({
-    name: z.string().describe("Candidate's full name"),
-    email: z.string().describe("Candidate's email address"),
-    phone: z.string().describe("Candidate's phone number"),
-    summary: z.string().describe("A professional summary tailored for the target job"),
-    education: z.array(z.object({
-        degree: z.string().describe("Degree, major, university, and year"),
-        gpa: z.string().optional().describe("GPA or CGPA if available")
-    })),
-    skills: z.array(z.string()).describe("A list of key skills relevant to the job"),
-    experience: z.array(z.object({
-        role: z.string().describe("Job title / role"),
-        company: z.string().describe("Company name"),
-        duration: z.string().describe("Duration of employment"),
-        points: z.array(z.string()).describe("Key accomplishments and responsibilities")
-    })),
-    projects: z.array(z.object({
-        title: z.string().describe("Project title"),
-        description: z.string().describe("Short description of what was built and tools/technologies used")
-    })),
-    achievements: z.array(z.string()).describe("List of key achievements/awards")
-})
+function hasExceededCharacterLimit(value, limit) {
+    return value.length > limit;
+}
+
+const inFlightPdfGenerations = new Map();
+
+async function getOrCreateResumePdf(interviewReport, userId) {
+    const reportId = interviewReport._id.toString();
+    const existingGeneration = inFlightPdfGenerations.get(reportId);
+
+    if (existingGeneration) {
+        return existingGeneration;
+    }
+
+    const generation = (async () => {
+        await reserveDailyAiUsage({
+            userId,
+            action: ACTIONS.RESUME_PDF,
+        });
+
+        const { resume, jobDescription, selfDescription } = interviewReport;
+        const pdfResult = await generateResumePdf({ resume, jobDescription, selfDescription });
+        const pdfBuffer = Buffer.isBuffer(pdfResult) ? pdfResult : Buffer.from(pdfResult);
+
+        interviewReport.resumePdfCache = pdfBuffer;
+        await interviewReport.save();
+
+        return pdfBuffer;
+    })();
+
+    inFlightPdfGenerations.set(reportId, generation);
+
+    try {
+        return await generation;
+    } finally {
+        inFlightPdfGenerations.delete(reportId);
+    }
+}
 
 
 
@@ -41,6 +58,7 @@ const tailoredResumeSchema = z.object({
 
 async function generateInterViewReportController(req, res) {
     try {
+        const usageConfig = getAiUsageConfig();
         let resumeText = ""
 
         // Parse resume PDF only if the user uploaded one
@@ -49,11 +67,30 @@ async function generateInterViewReportController(req, res) {
             resumeText = resumeContent.text
         }
 
-        const { selfDescription, jobDescription } = req.body
+        if (hasExceededCharacterLimit(resumeText, usageConfig.input.maxResumeCharacters)) {
+            return res.status(413).json({
+                message: `Resume text must not exceed ${usageConfig.input.maxResumeCharacters} characters.`,
+            })
+        }
+
+        const jobDescription = typeof req.body.jobDescription === "string" ? req.body.jobDescription.trim() : ""
+        const selfDescription = typeof req.body.selfDescription === "string" ? req.body.selfDescription.trim() : ""
 
         if (!jobDescription) {
             return res.status(400).json({
                 message: "Job description is required."
+            })
+        }
+
+        if (hasExceededCharacterLimit(jobDescription, usageConfig.input.maxJobDescriptionCharacters)) {
+            return res.status(413).json({
+                message: `Job description must not exceed ${usageConfig.input.maxJobDescriptionCharacters} characters.`,
+            })
+        }
+
+        if (hasExceededCharacterLimit(selfDescription, usageConfig.input.maxSelfDescriptionCharacters)) {
+            return res.status(413).json({
+                message: `Self description must not exceed ${usageConfig.input.maxSelfDescriptionCharacters} characters.`,
             })
         }
 
@@ -63,9 +100,14 @@ async function generateInterViewReportController(req, res) {
             })
         }
 
+        await reserveDailyAiUsage({
+            userId: req.user.id || req.user._id,
+            action: ACTIONS.INTERVIEW_REPORT,
+        })
+
         const interViewReportByAi = await generateInterviewReport({
             resume: resumeText,
-            selfDescription: selfDescription || "",
+            selfDescription,
             jobDescription
         })
 
@@ -83,10 +125,7 @@ async function generateInterViewReportController(req, res) {
         })
     } catch (error) {
         console.error("Generate Interview Report Error:", error)
-        res.status(500).json({
-            message: "Failed to generate interview report. Please try again.",
-            error: error.message
-        })
+        return sendGenerationError(res, error, "Failed to generate interview report. Please try again.")
     }
 }
 
@@ -314,8 +353,12 @@ async function getAllInterviewReportsController(req, res) {
 async function generateResumePdfController(req, res) {
     try {
         const { interviewReportId } = req.params
+        const userId = req.user.id || req.user._id
 
-        const interviewReport = await interviewReportModel.findById(interviewReportId)
+        const interviewReport = await interviewReportModel.findOne({
+            _id: interviewReportId,
+            user: userId,
+        })
 
         if (!interviewReport) {
             return res.status(404).json({
@@ -335,16 +378,8 @@ async function generateResumePdfController(req, res) {
             return res.send(cachedBuffer)
         }
 
-        // Generate fresh PDF (first time only)
-        const { resume, jobDescription, selfDescription } = interviewReport
-        const pdfResult = await generateResumePdf({ resume, jobDescription, selfDescription })
-
-        // Puppeteer v25+ returns Uint8Array; ensure it's a proper Node.js Buffer
-        const pdfBuffer = Buffer.isBuffer(pdfResult) ? pdfResult : Buffer.from(pdfResult)
-
-        // Cache the generated PDF for future instant downloads
-        interviewReport.resumePdfCache = pdfBuffer
-        await interviewReport.save()
+        // Concurrent requests for the same uncached report share one AI/Puppeteer job.
+        const pdfBuffer = await getOrCreateResumePdf(interviewReport, userId)
 
         res.set({
             "Content-Type": "application/pdf",
@@ -354,7 +389,7 @@ async function generateResumePdfController(req, res) {
         res.send(pdfBuffer)
     } catch (error) {
         console.error("Generate Resume PDF Error:", error)
-        res.status(500).json({ message: "Internal Server Error", error: error.message })
+        return sendGenerationError(res, error, "Failed to generate resume PDF. Please try again.")
     }
 }
 

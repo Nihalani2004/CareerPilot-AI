@@ -2,6 +2,12 @@ const express = require("express");
 const authMiddleware = require("../middlewares/auth.middleware")
 const interviewController = require("../controllers/interview.controller")
 const upload = require("../middlewares/file.middleware")
+const {
+    interviewGenerationIpRateLimiter,
+    interviewGenerationRateLimiter,
+    resumePdfIpRateLimiter,
+    resumePdfRateLimiter,
+} = require("../middlewares/ai-rate-limit.middleware")
 
 const interviewRouter = express.Router()
 
@@ -10,7 +16,7 @@ const interviewRouter = express.Router()
  * @description generate the new interview report on the basis of self description, resume pdf and job description
  * @access Private
  */
-interviewRouter.post("/", authMiddleware.authUser, upload.single("resume"), interviewController.generateInterViewReportController)
+interviewRouter.post("/", authMiddleware.authUser, interviewGenerationIpRateLimiter, interviewGenerationRateLimiter, upload.single("resume"), interviewController.generateInterViewReportController)
 
 
 /**
@@ -42,6 +48,6 @@ interviewRouter.get("/", authMiddleware.authUser, interviewController.getAllInte
  * @description generate resume pdf on the basis of user self description, resume content and job description.
  * @access private
  */
-interviewRouter.post("/resume/pdf/:interviewReportId", authMiddleware.authUser, interviewController.generateResumePdfController)
+interviewRouter.post("/resume/pdf/:interviewReportId", authMiddleware.authUser, resumePdfIpRateLimiter, resumePdfRateLimiter, interviewController.generateResumePdfController)
 
 module.exports = interviewRouter
