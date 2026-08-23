@@ -59,7 +59,15 @@ MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret_key
 GOOGLE_GENAI_API_KEY=your_gemini_api_key
 FRONTEND_URL=http://localhost:5173
+NODE_ENV=development
+JWT_EXPIRES_IN=1d
+AUTH_COOKIE_MAX_AGE_MS=86400000
+AUTH_COOKIE_SAME_SITE=lax
+AUTH_COOKIE_SECURE=false
+MONGODB_DNS_SERVERS=1.1.1.1,8.8.8.8
 ```
+
+For production, serve the frontend and API from the same site where possible, set `NODE_ENV=production`, use HTTPS, and set `AUTH_COOKIE_SECURE=true`. If the frontend must be hosted on a different site, set `AUTH_COOKIE_SAME_SITE=none` together with `AUTH_COOKIE_SECURE=true`. Set `TRUST_PROXY=true` when HTTPS is terminated by a reverse proxy. The frontend can use `VITE_API_BASE_URL` to point at a deployed API; it defaults to `http://localhost:3000` during local development.
 
 #### 3. Install Dependencies & Run
 
