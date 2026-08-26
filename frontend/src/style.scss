@@ -184,7 +184,7 @@ a {
 .theme-toggle {
   position: fixed;
   top: 1rem;
-  right: 1rem;
+  right: calc(1rem + 6.6rem + 0.45rem);
   z-index: 1000;
   display: inline-flex;
   align-items: center;
@@ -239,7 +239,7 @@ a {
 @media (max-width: 600px) {
   .theme-toggle {
     top: 0.65rem;
-    right: 0.65rem;
+    right: calc(0.65rem + 2.5rem + 0.5rem);
   }
 
   .theme-toggle__label { display: none; }
