@@ -4,6 +4,7 @@ import '../style/home.scss';
 import { useInterview } from "../hooks/useInterview.js";
 import { useNavigate } from "react-router";
 import ParticleField from "../../../components/ParticleField";
+import ProfileMenu from "../../../components/ProfileMenu";
 
 /* ── Animation Variants ── */
 const fadeUp = {
@@ -79,6 +80,7 @@ const Home = () => {
 
     return (
         <main className="home">
+            <ProfileMenu />
             {/* ── 3D Background ── */}
             <div className="home__hero-bg">
                 <ParticleField />
@@ -233,6 +235,7 @@ const Home = () => {
             {/* Recent Reports List */}
             {reports.length > 0 && (
                 <motion.section
+                    id="recent-reports"
                     className='recent-reports'
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
