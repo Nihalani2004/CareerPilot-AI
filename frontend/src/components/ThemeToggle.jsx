@@ -24,7 +24,6 @@ export default function ThemeToggle() {
                     )}
                 </motion.span>
             </AnimatePresence>
-            <span className="theme-toggle__label">{isLightMode ? "Light" : "Dark"}</span>
         </motion.button>
     );
 }

@@ -184,13 +184,14 @@ a {
 .theme-toggle {
   position: fixed;
   top: 1rem;
-  right: calc(1rem + 6.6rem + 0.45rem);
+  right: 1rem;
   z-index: 1000;
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  min-height: 2.5rem;
-  padding: 0.45rem 0.7rem;
+  width: 2.65rem;
+  height: 2.65rem;
+  min-height: 2.65rem;
+  padding: 0;
   border: 1px solid var(--glass-border);
   border-radius: 999px;
   background: var(--glass-bg);
@@ -202,6 +203,7 @@ a {
   font-size: 0.73rem;
   font-weight: 750;
   cursor: pointer;
+  overflow: hidden;
   transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 
   &:hover {
@@ -214,6 +216,9 @@ a {
 }
 
 .theme-toggle__icon {
+  position: absolute;
+  inset: 0;
+  margin: auto;
   display: grid;
   place-items: center;
   width: 1.35rem;
@@ -236,11 +241,15 @@ a {
   background: rgba(241, 245, 249, 0.94);
 }
 
+/* Home exposes appearance in its profile menu, avoiding overlap with variable-length usernames. */
+body:has(.home) .theme-toggle {
+  display: none;
+}
+
 @media (max-width: 600px) {
   .theme-toggle {
     top: 0.65rem;
-    right: calc(0.65rem + 2.5rem + 0.5rem);
+    right: 0.65rem;
   }
 
-  .theme-toggle__label { display: none; }
 }
