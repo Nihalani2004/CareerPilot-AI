@@ -93,6 +93,33 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
     margin-top: auto;
 }
 
+.iv-sidebar__ats {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: auto;
+    margin-bottom: 0.65rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid rgba($purple, 0.32);
+    border-radius: $radius-md;
+    background: rgba($purple, 0.11);
+    color: #c4b5fd;
+    font-family: inherit;
+    font-size: 0.74rem;
+    font-weight: 700;
+    cursor: pointer;
+
+    &:hover {
+        background: rgba($purple, 0.18);
+        color: $text-white;
+    }
+}
+
+.iv-sidebar__ats + .iv-sidebar__download {
+    margin-top: 0;
+}
+
 .iv-nav {
     display: flex;
     flex-direction: column;
@@ -543,6 +570,10 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
 
         .iv-sidebar__download {
             margin-top: 0;
+        }
+
+        .iv-sidebar__ats {
+            margin: 0;
         }
     }
 

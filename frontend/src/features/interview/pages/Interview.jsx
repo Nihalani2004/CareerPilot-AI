@@ -232,6 +232,7 @@ const Interview = () => {
     const [downloadSuccess, setDownloadSuccess] = useState(false)
     const { report, getReportById, loading, getResumePdf } = useInterview()
     const { interviewId } = useParams()
+    const navigate = useNavigate()
     const [activeTab, setActiveTab] = useState("technical");
     const [expanded, setExpanded] = useState(0);
 
@@ -309,6 +310,18 @@ const Interview = () => {
                             </motion.button>
                         ))}
                     </nav>
+                    <motion.button
+                        onClick={() => navigate(`/interview/${interviewId}/ats`)}
+                        className="iv-sidebar__ats"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="m12 3-1.5 5.5L5 10l5.5 1.5L12 17l1.5-5.5L19 10l-5.5-1.5L12 3Z" />
+                            <path d="m19 16-.6 2.4L16 19l2.4.6L19 22l.6-2.4L22 19l-2.4-.6L19 16Z" />
+                        </svg>
+                        ATS Intelligence
+                    </motion.button>
                     <motion.button
                         onClick={handleDownloadResume}
                         disabled={downloading}
