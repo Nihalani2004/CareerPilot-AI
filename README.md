@@ -8,6 +8,7 @@ CareerPilot AI is a full-stack, AI-powered career-preparation platform. It trans
 - Extract text from uploaded resumes with `pdf-parse`.
 - Produce a match score, skill-gap analysis, technical and behavioral questions, and a day-wise preparation plan.
 - Generate and cache resume PDFs with **Puppeteer** to avoid repeat rendering work.
+- Provide an **ATS Intelligence Dashboard** with explainable requirement coverage, evidence mapping, section health, parsing signals, and safe resume-improvement actions.
 - Reuse an existing report for identical candidate/job submissions through SHA-256 input hashing and in-flight request coalescing.
 - Protect costly AI and PDF operations with per-user and per-IP rate limits, daily MongoDB-backed quotas, bounded queues, input limits, and rendering timeouts.
 - Use secure JWT cookie authentication, token blacklisting, trusted-origin verification, CORS allowlists, and ownership-scoped data access.
@@ -92,6 +93,7 @@ flowchart TB
 | Frontend | React, React Router, Context API, SCSS, Framer Motion | Authentication UI, report creation, report history, PDF download, and interactive report view. |
 | API | Node.js, Express, Axios-compatible REST endpoints | Routes requests, enforces security controls, and exposes application health. |
 | AI | Google GenAI SDK, Zod, Zod-to-JSON-Schema | Requests schema-constrained Gemini outputs for interview reports and resume HTML. |
+| ATS Intelligence | Deterministic analysis service, MongoDB snapshots | Explains job-requirement coverage without additional Gemini usage or automatic resume changes. |
 | Document Processing | Multer, PDF-Parse, Puppeteer | Accepts resume uploads, extracts text, renders ATS-oriented PDF files, and caches generated output. |
 | Data | MongoDB, Mongoose | Stores users, reports, cached PDFs, AI usage credits, and blacklisted tokens. |
 | Protection | JWT, bcryptjs, CORS, rate limiting, queues | Secures sessions and controls AI/PDF cost and resource consumption. |
@@ -180,6 +182,9 @@ CareerPilot-AI/
 | `GET` | `/api/interview/report/:interviewId` | Yes | Returns an ownership-scoped report. |
 | `DELETE` | `/api/interview/report/:interviewId` | Yes | Deletes an ownership-scoped report. |
 | `POST` | `/api/interview/resume/pdf/:interviewReportId` | Yes | Returns a cached or newly generated resume PDF. |
+| `GET` | `/api/ats-analysis/:interviewReportId` | Yes | Returns the saved ATS analysis for an owned report. |
+| `POST` | `/api/ats-analysis/:interviewReportId` | Yes | Creates or refreshes a deterministic ATS analysis. |
+| `PATCH` | `/api/ats-analysis/:analysisId/suggestions/:suggestionId` | Yes | Saves the status of an ATS improvement suggestion. |
 
 For history pagination, use `limit` (1–50; default 12) and the `nextCursor` returned by the previous response.
 
@@ -193,6 +198,7 @@ For history pagination, use `limit` (1–50; default 12) and the `nextCursor` re
 - **AI abuse prevention:** Separate user/IP limits protect report and PDF endpoints; MongoDB-backed daily credits persist across restarts.
 - **Input and rendering protection:** JSON and upload limits, character caps, Puppeteer request blocking, rendering timeout, and bounded queues prevent resource exhaustion.
 - **Duplicate work prevention:** Input-hash lookup and in-flight coalescing avoid redundant Gemini calls; generated PDFs are cached with their report.
+- **Explainable ATS analysis:** Requirement and evidence matching is deterministic, stored separately from the report, and never edits resume content automatically.
 - **Operational readiness:** The server waits for MongoDB before listening and exposes `GET /api/health`.
 
 > For multi-instance production deployments, use a shared rate-limit store such as Redis to make short-window request limits global across API instances.
