@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import "../style/Interview.scss";
 import { useInterview } from "../hooks/useInterview.js";
 import { useNavigate, useParams } from "react-router";
+import ParticleField from "../../../components/ParticleField";
 
 /* ── Navigation Items with inline SVG icons ── */
 const NAV_ITEMS = [
@@ -292,6 +293,7 @@ const Interview = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4 }}
         >
+            <ParticleField className="iv-page__particles" />
             <div className="iv-layout">
                 {/* ── Sidebar ── */}
                 <aside className="iv-sidebar">

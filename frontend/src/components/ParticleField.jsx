@@ -1,19 +1,19 @@
 import React, { useRef, useMemo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import { useTheme } from '../theme.context'
 
 /* ── Animated Particles inside the Canvas ── */
-const Particles = ({ count = 800 }) => {
+const Particles = ({ count = 800, theme }) => {
   const mesh = useRef()
 
   const [positions, colors] = useMemo(() => {
     const pos = new Float32Array(count * 3)
     const col = new Float32Array(count * 3)
 
-    const pink  = new THREE.Color('#ff2a6d')
-    const purple = new THREE.Color('#8b5cf6')
-    const cyan  = new THREE.Color('#06b6d4')
-    const palette = [pink, purple, cyan]
+    const palette = theme === 'light'
+      ? [new THREE.Color('#6366f1'), new THREE.Color('#0ea5e9'), new THREE.Color('#14b8a6')]
+      : [new THREE.Color('#ff2a6d'), new THREE.Color('#8b5cf6'), new THREE.Color('#06b6d4')]
 
     for (let i = 0; i < count; i++) {
       const i3 = i * 3
@@ -28,7 +28,7 @@ const Particles = ({ count = 800 }) => {
     }
 
     return [pos, col]
-  }, [count])
+  }, [count, theme])
 
   useFrame((state) => {
     if (!mesh.current) return
@@ -56,7 +56,7 @@ const Particles = ({ count = 800 }) => {
         size={0.035}
         vertexColors
         transparent
-        opacity={0.7}
+        opacity={theme === 'light' ? 0.38 : 0.7}
         sizeAttenuation
         depthWrite={false}
         blending={THREE.AdditiveBlending}
@@ -66,7 +66,7 @@ const Particles = ({ count = 800 }) => {
 }
 
 /* ── Floating Geometric Ring ── */
-const FloatingRing = ({ position, color, speed = 1 }) => {
+const FloatingRing = ({ position, color, speed = 1, opacity = 0.2 }) => {
   const ref = useRef()
 
   useFrame((state) => {
@@ -79,13 +79,17 @@ const FloatingRing = ({ position, color, speed = 1 }) => {
   return (
     <mesh ref={ref} position={position}>
       <torusGeometry args={[1, 0.02, 16, 80]} />
-      <meshBasicMaterial color={color} transparent opacity={0.2} />
+      <meshBasicMaterial color={color} transparent opacity={opacity} />
     </mesh>
   )
 }
 
 /* ── Main ParticleField Component ── */
 const ParticleField = ({ className = '', style = {} }) => {
+  const { theme } = useTheme()
+  const isLightMode = theme === 'light'
+  const ringOpacity = isLightMode ? 0.12 : 0.2
+
   return (
     <div
       className={`particle-field ${className}`}
@@ -103,10 +107,10 @@ const ParticleField = ({ className = '', style = {} }) => {
         gl={{ antialias: false, alpha: true }}
         style={{ background: 'transparent' }}
       >
-        <Particles count={600} />
-        <FloatingRing position={[-3, 1, -2]} color="#8b5cf6" speed={0.8} />
-        <FloatingRing position={[3, -1, -3]} color="#ff2a6d" speed={0.6} />
-        <FloatingRing position={[0, 2, -4]} color="#06b6d4" speed={1} />
+        <Particles count={600} theme={theme} />
+        <FloatingRing position={[-3, 1, -2]} color={isLightMode ? "#6366f1" : "#8b5cf6"} speed={0.8} opacity={ringOpacity} />
+        <FloatingRing position={[3, -1, -3]} color={isLightMode ? "#0ea5e9" : "#ff2a6d"} speed={0.6} opacity={ringOpacity} />
+        <FloatingRing position={[0, 2, -4]} color={isLightMode ? "#14b8a6" : "#06b6d4"} speed={1} opacity={ringOpacity} />
       </Canvas>
     </div>
   )

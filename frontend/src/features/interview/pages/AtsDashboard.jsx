@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router";
+import ParticleField from "../../../components/ParticleField";
 import "../style/AtsDashboard.scss";
 import {
     createAtsAnalysis,
@@ -144,6 +145,7 @@ export default function AtsDashboard() {
     const { metrics } = analysis;
     return (
         <main className="ats-page">
+            <ParticleField className="ats-page__particles" />
             <div className="ats-shell">
                 <header className="ats-header">
                     <button className="ats-back" onClick={() => navigate(`/interview/${interviewId}`)} aria-label="Return to interview report">
