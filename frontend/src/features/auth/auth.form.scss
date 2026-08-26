@@ -202,6 +202,26 @@
   width: 100%;
 }
 
+.auth-form-error {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: -0.15rem 0 0;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(244, 63, 94, 0.30);
+  border-radius: var(--radius-sm);
+  background: rgba(244, 63, 94, 0.10);
+  color: #fda4af;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+:root[data-theme="light"] .auth-form-error {
+  color: #be123c;
+  background: rgba(244, 63, 94, 0.08);
+}
+
 /* ── Footer Link ── */
 .auth-footer {
   text-align: center;

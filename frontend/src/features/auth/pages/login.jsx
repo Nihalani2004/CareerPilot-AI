@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from 'react-router';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import "../auth.form.scss";
 import { useAuth } from "../hooks/useAuth";
 import ParticleField from "../../../components/ParticleField";
@@ -23,12 +23,20 @@ const Login = () => {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [showPassword, setShowPassword] = useState(false)
+    const [loginError, setLoginError] = useState("")
 
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        await handleLogin({ email, password })
-        navigate("/")
+        setLoginError("")
+        try {
+            await handleLogin({ email, password })
+            navigate("/")
+        } catch (error) {
+            setLoginError(error.response?.status === 400
+                ? "Invalid email or password."
+                : "Unable to sign in right now. Please try again.");
+        }
     }
 
     if (loading) {
@@ -67,7 +75,7 @@ const Login = () => {
                         <label htmlFor="email">Email</label>
                         <input
                             onChange={(e) => { setEmail(e.target.value) }}
-                            type="email" id="email" name="email" placeholder="you@example.com"
+                            type="email" id="email" name="email" placeholder="you@example.com" required
                         />
                     </motion.div>
 
@@ -80,6 +88,7 @@ const Login = () => {
                                 id="password"
                                 name="password"
                                 placeholder="Enter your password"
+                                required
                             />
                             <button
                                 type="button"
@@ -104,6 +113,21 @@ const Login = () => {
                             </button>
                         </div>
                     </motion.div>
+
+                    <AnimatePresence initial={false}>
+                        {loginError && (
+                            <motion.p
+                                className="auth-form-error"
+                                role="alert"
+                                initial={{ opacity: 0, y: -6 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -6 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                {loginError}
+                            </motion.p>
+                        )}
+                    </AnimatePresence>
 
                     <motion.button
                         className="button primary-button"

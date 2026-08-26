@@ -15,8 +15,7 @@ export const useAuth = () => {
         try {
             const data = await login({ email, password });
             setUser(data.user)
-        } catch (err) {
-
+            return data;
         } finally {
             setLoading(false)
         }
