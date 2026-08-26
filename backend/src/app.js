@@ -23,7 +23,7 @@ app.use(cors({
         return callback(new Error("Request origin is not allowed by CORS."));
     },
     credentials: true,
-    methods: ["GET", "POST", "DELETE"],
+    methods: ["GET", "POST", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type"],
 }))
 app.use(verifyTrustedOrigin);
@@ -40,10 +40,12 @@ app.get("/api/health", (req, res) => {
 /* require all the routes here  */
 const authRouter = require('./routes/auth.routes');
 const interviewRouter = require("./routes/interview.routes")
+const atsAnalysisRouter = require("./routes/atsAnalysis.routes");
 
 /* use all the routes here */
 app.use('/api/auth', authRouter); 
 app.use("/api/interview", interviewRouter)
+app.use("/api/ats-analysis", atsAnalysisRouter)
 
 app.use((error, req, res, next) => {
     if (error.message === "Request origin is not allowed by CORS.") {
