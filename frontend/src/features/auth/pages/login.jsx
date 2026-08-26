@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import "../auth.form.scss";
 import { useAuth } from "../hooks/useAuth";
 import ParticleField from "../../../components/ParticleField";
+import BrandLogo from "../../../components/BrandLogo";
 
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
@@ -50,8 +51,7 @@ const Login = () => {
                 transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
                 <motion.div className="auth-brand" custom={0} variants={fadeUp} initial="initial" animate="animate">
-                    <span className="auth-brand__icon">✦</span>
-                    CareerPilot AI
+                    <BrandLogo />
                 </motion.div>
 
                 <motion.h1 custom={1} variants={fadeUp} initial="initial" animate="animate">
