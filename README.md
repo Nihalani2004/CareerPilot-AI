@@ -12,6 +12,7 @@ CareerPilot AI is a full-stack, AI-powered career-preparation platform. It trans
 - Reuse an existing report for identical candidate/job submissions through SHA-256 input hashing and in-flight request coalescing.
 - Protect costly AI and PDF operations with per-user and per-IP rate limits, daily MongoDB-backed quotas, bounded queues, input limits, and rendering timeouts.
 - Use secure JWT cookie authentication, token blacklisting, trusted-origin verification, CORS allowlists, and ownership-scoped data access.
+- Support Google and GitHub OAuth with verified-email account linking, CSRF state validation, and the same secure JWT cookie session.
 - Load report history through cursor pagination and provide an API health endpoint for readiness monitoring.
 
 ---
@@ -175,6 +176,8 @@ CareerPilot-AI/
 | `GET` | `/api/health` | No | Reports API/database readiness. |
 | `POST` | `/api/auth/register` | No | Creates an account. |
 | `POST` | `/api/auth/login` | No | Starts a secure cookie-based session. |
+| `GET` | `/api/auth/oauth/google` | No | Starts Google OAuth sign-in. |
+| `GET` | `/api/auth/oauth/github` | No | Starts GitHub OAuth sign-in. |
 | `POST` | `/api/auth/logout` | Yes | Blacklists the current token and clears its cookie. |
 | `GET` | `/api/auth/get-me` | Yes | Returns the current user. |
 | `POST` | `/api/interview/` | Yes | Generates or reuses an interview report. |
@@ -236,6 +239,13 @@ AUTH_COOKIE_MAX_AGE_MS=86400000
 AUTH_COOKIE_SAME_SITE=lax
 AUTH_COOKIE_SECURE=false
 
+# OAuth callback base. Must be the public API URL in production.
+BACKEND_URL=http://localhost:3000
+GOOGLE_OAUTH_CLIENT_ID=your_google_client_id
+GOOGLE_OAUTH_CLIENT_SECRET=your_google_client_secret
+GITHUB_OAUTH_CLIENT_ID=your_github_client_id
+GITHUB_OAUTH_CLIENT_SECRET=your_github_client_secret
+
 # Optional: use public resolvers if a local DNS server blocks MongoDB SRV lookups.
 MONGODB_DNS_SERVERS=1.1.1.1,8.8.8.8
 
@@ -261,6 +271,17 @@ PUPPETEER_TIMEOUT_MS=30000
 For production, use HTTPS with `NODE_ENV=production` and `AUTH_COOKIE_SECURE=true`. When the frontend is hosted on a different site, set `AUTH_COOKIE_SAME_SITE=none` together with `AUTH_COOKIE_SECURE=true`. Set `TRUST_PROXY=true` when TLS is terminated by a reverse proxy.
 
 If the frontend calls a deployed API, add `VITE_API_BASE_URL=https://your-api.example.com` to `frontend/.env`. It defaults to `http://localhost:3000` for local development.
+
+### OAuth provider setup
+
+Create a Google OAuth 2.0 web client and a GitHub OAuth App, then add the client IDs and secrets above. Configure these callback URLs exactly:
+
+```text
+http://localhost:3000/api/auth/oauth/google/callback
+http://localhost:3000/api/auth/oauth/github/callback
+```
+
+For deployment, replace `http://localhost:3000` with the value of `BACKEND_URL`, use HTTPS, and register the production callback URL with both providers. OAuth users must provide a verified provider email; existing password accounts with that verified email are linked automatically.
 
 ### 3. Install and Run
 

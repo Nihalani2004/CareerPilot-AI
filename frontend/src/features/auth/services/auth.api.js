@@ -4,6 +4,11 @@ const api = axios.create({
     withCredentials: true
 })
 
+export function getOAuthSignInUrl(provider) {
+    const baseUrl = (import.meta.env.VITE_API_BASE_URL || "http://localhost:3000").replace(/\/$/, "");
+    return `${baseUrl}/api/auth/oauth/${provider}`;
+}
+
 
 export async function register({username,email,password}){
 

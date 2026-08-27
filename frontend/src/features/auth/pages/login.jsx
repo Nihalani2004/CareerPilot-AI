@@ -1,10 +1,11 @@
-import React, { useState } from "react";
-import { useNavigate, Link } from 'react-router';
+import React, { useEffect, useState } from "react";
+import { useNavigate, Link, useLocation } from 'react-router';
 import { AnimatePresence, motion } from 'framer-motion';
 import "../auth.form.scss";
 import { useAuth } from "../hooks/useAuth";
 import ParticleField from "../../../components/ParticleField";
 import BrandLogo from "../../../components/BrandLogo";
+import OAuthButtons from "../components/OAuthButtons";
 
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
@@ -19,11 +20,19 @@ const Login = () => {
 
     const { loading, handleLogin } = useAuth()
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [showPassword, setShowPassword] = useState(false)
     const [loginError, setLoginError] = useState("")
+
+    useEffect(() => {
+        const oauthError = new URLSearchParams(location.search).get("oauthError");
+        if (oauthError) {
+            setLoginError("Google or GitHub sign-in could not be completed. Please try again.");
+        }
+    }, [location.search]);
 
 
     const handleSubmit = async (e) => {
@@ -131,16 +140,15 @@ const Login = () => {
 
                     <motion.button
                         className="button primary-button"
-                        custom={5}
-                        variants={fadeUp}
-                        initial="initial"
-                        animate="animate"
+                        initial={false}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                     >
                         Sign In
                     </motion.button>
                 </form>
+
+                <OAuthButtons />
 
                 <motion.p className="auth-footer" custom={6} variants={fadeUp} initial="initial" animate="animate">
                     Don't have an account?<Link to={"/register"}>Create one</Link>

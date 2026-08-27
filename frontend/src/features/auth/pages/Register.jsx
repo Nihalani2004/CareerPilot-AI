@@ -5,6 +5,7 @@ import "../auth.form.scss";
 import { useAuth } from "../hooks/useAuth";
 import ParticleField from "../../../components/ParticleField";
 import BrandLogo from "../../../components/BrandLogo";
+import OAuthButtons from "../components/OAuthButtons";
 
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
@@ -97,6 +98,8 @@ const Register = () => {
                         Create Account
                     </motion.button>
                 </form>
+
+                <OAuthButtons />
 
                 <motion.p className="auth-footer" custom={7} variants={fadeUp} initial="initial" animate="animate">
                     Already have an account?<Link to={"/login"}>Sign in</Link>
