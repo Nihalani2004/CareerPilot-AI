@@ -1,5 +1,6 @@
 const DEFAULT_FRONTEND_URL = "http://localhost:5173";
 const DEFAULT_COOKIE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+const OAUTH_STATE_MAX_AGE_MS = 10 * 60 * 1000;
 
 function isProduction() {
     return process.env.NODE_ENV === "production";
@@ -76,6 +77,28 @@ function getAuthCookieClearOptions() {
     return clearOptions;
 }
 
+function getOAuthStateCookieOptions() {
+    const { secure, domain } = getAuthCookieOptions();
+    const options = {
+        httpOnly: true,
+        secure,
+        sameSite: "lax",
+        maxAge: OAUTH_STATE_MAX_AGE_MS,
+        path: "/api/auth/oauth",
+    };
+
+    if (domain) {
+        options.domain = domain;
+    }
+
+    return options;
+}
+
+function getOAuthStateCookieClearOptions() {
+    const { maxAge, ...clearOptions } = getOAuthStateCookieOptions();
+    return clearOptions;
+}
+
 function getJwtExpiresIn() {
     return process.env.JWT_EXPIRES_IN || "1d";
 }
@@ -84,6 +107,8 @@ module.exports = {
     getAllowedOrigins,
     getAuthCookieOptions,
     getAuthCookieClearOptions,
+    getOAuthStateCookieOptions,
+    getOAuthStateCookieClearOptions,
     getJwtExpiresIn,
     isProduction,
 };

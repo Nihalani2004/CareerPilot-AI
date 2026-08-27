@@ -13,9 +13,26 @@ const userSchema = new mongoose.Schema({
     },
     password:{
         type:String,
-        required : true ,
-    }
+        required : false,
+    },
+    oauthProviders: [{
+        provider: {
+            type: String,
+            enum: ["google", "github"],
+            required: true,
+        },
+        providerId: {
+            type: String,
+            required: true,
+        },
+        avatarUrl: {
+            type: String,
+            default: "",
+        },
+    }],
 })
 
+userSchema.index({ "oauthProviders.provider": 1, "oauthProviders.providerId": 1 }, { unique: true, sparse: true });
+
 const userModel = mongoose.model("User", userSchema);
-module.exports = userModel; 
+module.exports = userModel;

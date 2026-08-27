@@ -19,6 +19,20 @@ authRouter.post('/register', authController.registerUserController);
  */
 authRouter.post("/login", authController.loginUserController)
 
+/**
+ * @route GET /api/auth/oauth/:provider
+ * @description start a Google or GitHub OAuth sign-in flow
+ * @access public
+ */
+authRouter.get("/oauth/:provider", authController.startOAuthController);
+
+/**
+ * @route GET /api/auth/oauth/:provider/callback
+ * @description complete a Google or GitHub OAuth sign-in flow
+ * @access public
+ */
+authRouter.get("/oauth/:provider/callback", authController.oauthCallbackController);
+
 
 /**
  * @route POST /api/auth/logout
