@@ -5,6 +5,9 @@ import Protected from "./features/auth/components/Protected";
 import Home from "./features/interview/pages/Home";
 import Interview from "./features/interview/pages/Interview";
 import AtsDashboard from "./features/interview/pages/AtsDashboard";
+import RoadmapLibrary from "./features/roadmaps/pages/RoadmapLibrary";
+import RoadmapBuilder from "./features/roadmaps/pages/RoadmapBuilder";
+import RoadmapDetail from "./features/roadmaps/pages/RoadmapDetail";
 
 export const router = createBrowserRouter([
     {
@@ -23,5 +26,14 @@ export const router = createBrowserRouter([
     },{
         path:"/interview/:interviewId/ats",
         element: <Protected><AtsDashboard /></Protected>
+    },{
+        path:"/roadmaps",
+        element: <Protected><RoadmapLibrary /></Protected>
+    },{
+        path:"/roadmaps/new",
+        element: <Protected><RoadmapBuilder /></Protected>
+    },{
+        path:"/roadmaps/:roadmapId",
+        element: <Protected><RoadmapDetail /></Protected>
     }
 ])
