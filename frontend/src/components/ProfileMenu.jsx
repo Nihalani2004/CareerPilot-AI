@@ -13,6 +13,7 @@ function Icon({ name }) {
     const icons = {
         chevron: <path d="m8 10 4 4 4-4" />,
         plans: <><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15.5A2.5 2.5 0 0 0 17.5 16H4Z" /><path d="M4 5.5V21a2.5 2.5 0 0 1 2.5-2.5H20" /><path d="M8 7h8M8 10.5h6" /></>,
+        roadmap: <><path d="m4 6 5-3 6 3 5-3v15l-5 3-6-3-5 3Z" /><path d="M9 3v15M15 6v15" /></>,
         sun: <><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" /><circle cx="12" cy="12" r="4" /></>,
         moon: <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3 6.7 6.7 0 0 0 21 12.8Z" />,
         logout: <><path d="M10 17l5-5-5-5" /><path d="M15 12H3" /><path d="M21 19V5a2 2 0 0 0-2-2h-6" /></>,
@@ -77,6 +78,7 @@ export default function ProfileMenu() {
                         </div>
                         <div className="profile-menu__divider" />
                         <button type="button" role="menuitem" className="profile-menu__item" onClick={scrollToPlans}><Icon name="plans" /><span>My interview plans</span></button>
+                        <button type="button" role="menuitem" className="profile-menu__item" onClick={() => { navigate("/roadmaps"); setIsOpen(false); }}><Icon name="roadmap" /><span>My learning roadmaps</span></button>
                         <button type="button" role="menuitem" className="profile-menu__item" onClick={toggleTheme}><Icon name={theme === "light" ? "sun" : "moon"} /><span>Appearance</span><em>{theme === "light" ? "Light" : "Dark"}</em></button>
                         <div className="profile-menu__divider" />
                         <button type="button" role="menuitem" className="profile-menu__item profile-menu__item--logout" onClick={signOut} disabled={isSigningOut}><Icon name="logout" /><span>{isSigningOut ? "Signing out..." : "Log out"}</span></button>

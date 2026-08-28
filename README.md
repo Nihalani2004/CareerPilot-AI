@@ -9,6 +9,7 @@ CareerPilot AI is a full-stack, AI-powered career-preparation platform. It trans
 - Produce a match score, skill-gap analysis, technical and behavioral questions, and a day-wise preparation plan.
 - Generate and cache resume PDFs with **Puppeteer** to avoid repeat rendering work.
 - Provide an **ATS Intelligence Dashboard** with explainable requirement coverage, evidence mapping, section health, parsing signals, and safe resume-improvement actions.
+- Turn AI-identified gaps into **Personalized Learning Roadmaps** with realistic weekly tasks, estimated effort, curated resources, progress tracking, and transparent interview-readiness progress.
 - Reuse an existing report for identical candidate/job submissions through SHA-256 input hashing and in-flight request coalescing.
 - Protect costly AI and PDF operations with per-user and per-IP rate limits, daily MongoDB-backed quotas, bounded queues, input limits, and rendering timeouts.
 - Use secure JWT cookie authentication, token blacklisting, trusted-origin verification, CORS allowlists, and ownership-scoped data access.
@@ -188,6 +189,11 @@ CareerPilot-AI/
 | `GET` | `/api/ats-analysis/:interviewReportId` | Yes | Returns the saved ATS analysis for an owned report. |
 | `POST` | `/api/ats-analysis/:interviewReportId` | Yes | Creates or refreshes a deterministic ATS analysis. |
 | `PATCH` | `/api/ats-analysis/:analysisId/suggestions/:suggestionId` | Yes | Saves the status of an ATS improvement suggestion. |
+| `POST` | `/api/learning-roadmaps` | Yes | Creates or returns a source-grounded personalized learning roadmap. |
+| `GET` | `/api/learning-roadmaps` | Yes | Returns the authenticated user’s cursor-paginated roadmap library. |
+| `GET` | `/api/learning-roadmaps/:roadmapId` | Yes | Returns an owned roadmap and its tasks. |
+| `PATCH` | `/api/learning-roadmaps/:roadmapId` | Yes | Renames, completes, or archives an owned roadmap. |
+| `PATCH` | `/api/learning-roadmaps/:roadmapId/tasks/:taskId` | Yes | Updates task status, notes, effort, or confidence and recalculates readiness. |
 
 For history pagination, use `limit` (1–50; default 12) and the `nextCursor` returned by the previous response.
 

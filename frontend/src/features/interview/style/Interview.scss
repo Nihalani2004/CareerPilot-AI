@@ -105,7 +105,7 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    margin-top: auto;
+    margin-top: 0;
     margin-bottom: 0.65rem;
     padding: 0.65rem 0.75rem;
     border: 1px solid rgba($purple, 0.32);
@@ -121,6 +121,10 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
         background: rgba($purple, 0.18);
         color: $text-white;
     }
+}
+
+.iv-nav + .iv-sidebar__ats {
+    margin-top: auto;
 }
 
 .iv-sidebar__ats + .iv-sidebar__download {

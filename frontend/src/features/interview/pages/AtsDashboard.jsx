@@ -153,6 +153,9 @@ export default function AtsDashboard() {
                     </button>
                     <div className="ats-header__actions">
                         <span className="ats-method-note">Evidence-based estimate</span>
+                        <button className="ats-button ats-button--secondary" onClick={() => navigate(`/roadmaps/new?source=${interviewId}`)}>
+                            <Icon name="spark" /> Build learning roadmap
+                        </button>
                         <button className="ats-button ats-button--secondary" onClick={() => loadAnalysis({ regenerate: true })} disabled={isRefreshing}>
                             <Icon name="refresh" /> {isRefreshing ? "Refreshing" : "Refresh analysis"}
                         </button>

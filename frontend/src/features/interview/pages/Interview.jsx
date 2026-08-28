@@ -325,6 +325,18 @@ const Interview = () => {
                         ATS Intelligence
                     </motion.button>
                     <motion.button
+                        onClick={() => navigate(`/roadmaps/new?source=${interviewId}`)}
+                        className="iv-sidebar__ats"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="m4 6 5-3 6 3 5-3v15l-5 3-6-3-5 3Z" />
+                            <path d="M9 3v15M15 6v15" />
+                        </svg>
+                        Learning Roadmap
+                    </motion.button>
+                    <motion.button
                         onClick={handleDownloadResume}
                         disabled={downloading}
                         className={`button primary-button iv-sidebar__download ${downloadSuccess ? 'success-button' : ''}`}

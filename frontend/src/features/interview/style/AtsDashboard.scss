@@ -34,7 +34,7 @@ $ats-rose: #fb7185;
 }
 
 .ats-header { justify-content: space-between; margin-bottom: 2.2rem; }
-.ats-header__actions { gap: .85rem; }
+.ats-header__actions { gap: .85rem; flex-wrap: wrap; justify-content: flex-end; }
 
 .ats-back, .ats-button, .ats-suggestion button {
   border: 0;
