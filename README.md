@@ -11,6 +11,7 @@ CareerPilot AI is a full-stack, AI-powered career-preparation platform. It trans
 - Provide an **ATS Intelligence Dashboard** with explainable requirement coverage, evidence mapping, section health, parsing signals, and safe resume-improvement actions.
 - Turn AI-identified gaps into **Personalized Learning Roadmaps** with realistic weekly tasks, estimated effort, curated resources, progress tracking, and transparent interview-readiness progress.
 - Compare 2-10 job descriptions in a separate **Job Market Comparison** workspace to surface repeated skills, high-demand tools, shared responsibilities, per-company requirement coverage, and profile-backed target-role readiness.
+- Run a private **Resume ATS Checker** on PDF or DOCX files. It extracts resume text locally, evaluates parseability, structure, contact details, skills, chronology, achievement evidence, and formatting signals, then provides prioritized recommendations and version comparison.
 - Reuse an existing report for identical candidate/job submissions through SHA-256 input hashing and in-flight request coalescing.
 - Protect costly AI and PDF operations with per-user and per-IP rate limits, daily MongoDB-backed quotas, bounded queues, input limits, and rendering timeouts.
 - Use secure JWT cookie authentication, token blacklisting, trusted-origin verification, CORS allowlists, and ownership-scoped data access.
@@ -103,6 +104,18 @@ flowchart TB
 
 ---
 
+## Resume ATS Checker Workflow
+
+1. Open **Resume ATS Checker** from the authenticated workspace menu and upload a PDF or DOCX resume (up to 3 MB).
+2. The API extracts text with `pdf-parse` for PDFs or Mammoth for DOCX files, without consuming Gemini credits.
+3. A deterministic readiness rubric evaluates file health, conventional section headings, contact signals, skills clarity, bullet structure, action language, measurable outcomes, and timeline readability.
+4. The saved report presents score breakdowns, parser evidence, prioritized fixes, and a three-item **Recommended Focus** plan with concrete actions.
+5. Users can return to their private scan history, compare two saved versions, or delete an individual scan. Identical files reuse the matching analysis-version cache.
+
+> This is an explainable ATS-readiness estimate, not a hiring prediction or a score from an employer's proprietary ATS. For role-specific alignment, use ATS Intelligence with a target job description.
+
+---
+
 ## Core Components
 
 | Layer | Components | Responsibility |
@@ -113,7 +126,8 @@ flowchart TB
 | ATS Intelligence | Deterministic analysis service, MongoDB snapshots | Explains job-requirement coverage without additional Gemini usage or automatic resume changes. |
 | Learning Roadmaps | Deterministic planning and readiness services, MongoDB tasks | Turns report-grounded gaps into weekly tasks, curated resources, progress tracking, and transparent readiness progress. |
 | Job Market Comparison | Deterministic comparison service, MongoDB snapshots | Compares 2-10 role descriptions, identifies market demand, and checks a linked report for profile evidence without another Gemini request. |
-| Document Processing | Multer, PDF-Parse, Puppeteer | Accepts resume uploads, extracts text, renders ATS-oriented PDF files, and caches generated output. |
+| Resume ATS Checker | Deterministic rubric, MongoDB versioned scans | Analyzes PDF/DOCX resume structure and evidence, returns focused improvement actions, and compares saved scan versions without Gemini usage. |
+| Document Processing | Multer, PDF-Parse, Mammoth, Puppeteer | Accepts PDF/DOCX resume uploads, extracts text, renders ATS-oriented PDF files, and caches generated output. |
 | Data | MongoDB, Mongoose | Stores users, reports, cached PDFs, AI usage credits, and blacklisted tokens. |
 | Protection | JWT, bcryptjs, CORS, rate limiting, queues | Secures sessions and controls AI/PDF cost and resource consumption. |
 
@@ -170,6 +184,8 @@ Key feature modules added to the current structure:
 - `backend/src/controllers/learningRoadmap.controller.js`, roadmap/task models, routes, and deterministic planning/readiness services
 - `frontend/src/features/job-comparison/` for the comparison library, builder, dashboard, and API client
 - `frontend/src/features/roadmaps/` for roadmap creation, saved-plan views, weekly tasks, resources, and progress tracking
+- `backend/src/controllers/resumeAts.controller.js`, `models/resumeAtsScan.model.js`, `routes/resumeAts.routes.js`, and `services/resume-ats.service.js` for private ATS scan creation, scoring, recommendations, and version comparison
+- `frontend/src/features/resume-ats/` for the centered uploader, analysis progress state, saved scan library, report, recommendations, and version comparison UI
 - `frontend/src/components/WorkspaceMenu.jsx` for the authenticated workspace navigation
 
 ---
@@ -182,7 +198,7 @@ Key feature modules added to the current structure:
 - MongoDB and Mongoose
 - Google GenAI SDK (`@google/genai`)
 - Zod and Zod-to-JSON-Schema
-- Puppeteer, PDF-Parse, and Multer
+- Puppeteer, PDF-Parse, Mammoth, and Multer
 - JWT, bcryptjs, cookie-parser, and CORS
 
 ### Frontend
@@ -205,6 +221,7 @@ Key feature modules added to the current structure:
 | `/api/ats-analysis/*` | Yes | Create and view deterministic ATS intelligence for a saved report. |
 | `/api/learning-roadmaps/*` | Yes | Create, view, and update personalized learning plans and task progress. |
 | `/api/job-comparisons/*` | Yes | Create, view, update, analyze, and manage private job-description comparisons. |
+| `/api/resume-ats/scans*` | Yes | Create a private PDF/DOCX resume scan, list/view/delete saved scans, and compare two versions. |
 
 See the route files under `backend/src/routes/` for the complete endpoint contract. Report and comparison libraries use cursor pagination with `limit` and `nextCursor`.
 
@@ -219,6 +236,7 @@ See the route files under `backend/src/routes/` for the complete endpoint contra
 - **Input and rendering protection:** JSON and upload limits, character caps, Puppeteer request blocking, rendering timeout, and bounded queues prevent resource exhaustion.
 - **Duplicate work prevention:** Input-hash lookup and in-flight coalescing avoid redundant Gemini calls; generated PDFs are cached with their report.
 - **Explainable ATS analysis:** Requirement and evidence matching is deterministic, stored separately from the report, and never edits resume content automatically.
+- **Private resume scans:** Resume ATS uploads are capped at 3 MB, accept only PDF/DOCX files, are user-scoped, rate-limited, and store extracted-analysis results rather than the original uploaded file.
 - **Private market intelligence:** Job comparisons are ownership-scoped, accept bounded input (2-10 descriptions, 8,000 characters each), detect duplicate descriptions by normalized hash, and refresh deterministically without additional AI usage.
 - **Operational readiness:** The server waits for MongoDB before listening and exposes `GET /api/health`.
 
@@ -311,6 +329,7 @@ npm test
 - The report-history API uses cursor pagination and excludes resume text, question payloads, and cached PDF bytes from summary responses.
 - A report-detail response excludes the cached PDF buffer; PDF bytes are sent only by the PDF download endpoint.
 - Generated resume PDFs are stored with their report for fast repeat downloads.
+- Resume ATS scans are versioned by content hash and scoring version, so updated scoring rules do not silently reuse an older result.
 
 ---
 
