@@ -42,12 +42,14 @@ const authRouter = require('./routes/auth.routes');
 const interviewRouter = require("./routes/interview.routes")
 const atsAnalysisRouter = require("./routes/atsAnalysis.routes");
 const learningRoadmapRouter = require("./routes/learningRoadmap.routes");
+const jobComparisonRouter = require("./routes/jobComparison.routes");
 
 /* use all the routes here */
 app.use('/api/auth', authRouter); 
 app.use("/api/interview", interviewRouter)
 app.use("/api/ats-analysis", atsAnalysisRouter)
 app.use("/api/learning-roadmaps", learningRoadmapRouter)
+app.use("/api/job-comparisons", jobComparisonRouter)
 
 app.use((error, req, res, next) => {
     if (error.message === "Request origin is not allowed by CORS.") {
