@@ -11,6 +11,8 @@ import RoadmapDetail from "./features/roadmaps/pages/RoadmapDetail";
 import ComparisonLibrary from "./features/job-comparison/pages/ComparisonLibrary";
 import ComparisonBuilder from "./features/job-comparison/pages/ComparisonBuilder";
 import ComparisonDashboard from "./features/job-comparison/pages/ComparisonDashboard";
+import ResumeAtsLibrary from "./features/resume-ats/pages/ResumeAtsLibrary";
+import ResumeAtsDetail from "./features/resume-ats/pages/ResumeAtsDetail";
 
 export const router = createBrowserRouter([
     {
@@ -47,5 +49,11 @@ export const router = createBrowserRouter([
     },{
         path:"/job-comparisons/:comparisonId",
         element: <Protected><ComparisonDashboard /></Protected>
+    },{
+        path:"/resume-ats",
+        element: <Protected><ResumeAtsLibrary /></Protected>
+    },{
+        path:"/resume-ats/:scanId",
+        element: <Protected><ResumeAtsDetail /></Protected>
     }
 ])
