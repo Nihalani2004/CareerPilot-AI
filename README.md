@@ -10,6 +10,7 @@ CareerPilot AI is a full-stack, AI-powered career-preparation platform. It trans
 - Generate and cache resume PDFs with **Puppeteer** to avoid repeat rendering work.
 - Provide an **ATS Intelligence Dashboard** with explainable requirement coverage, evidence mapping, section health, parsing signals, and safe resume-improvement actions.
 - Turn AI-identified gaps into **Personalized Learning Roadmaps** with realistic weekly tasks, estimated effort, curated resources, progress tracking, and transparent interview-readiness progress.
+- Compare 2-10 job descriptions in a separate **Job Market Comparison** workspace to surface repeated skills, high-demand tools, shared responsibilities, per-company requirement coverage, and profile-backed target-role readiness.
 - Reuse an existing report for identical candidate/job submissions through SHA-256 input hashing and in-flight request coalescing.
 - Protect costly AI and PDF operations with per-user and per-IP rate limits, daily MongoDB-backed quotas, bounded queues, input limits, and rendering timeouts.
 - Use secure JWT cookie authentication, token blacklisting, trusted-origin verification, CORS allowlists, and ownership-scoped data access.
@@ -39,6 +40,7 @@ flowchart TB
         Security[Security Boundary\nCORS • HttpOnly JWT cookies\nTrusted-origin check • Payload limits]:::guard
         Auth[Auth Router\nRegister • Login • Logout • Get Me]:::api
         Interview[Interview Router\nReports • PDF export • History]:::api
+        Intelligence[Intelligence Routers\nATS • Learning Roadmaps • Job Comparisons]:::api
         AuthGuard[Auth + Ownership Guard]:::guard
         Limits[AI Protection\nUser/IP rate limits • Daily quotas\nBounded work queues]:::guard
         Cache[Generation Optimization\nSHA-256 request cache\nIn-flight coalescing • PDF cache]:::service
@@ -48,6 +50,7 @@ flowchart TB
 
         Security --> Auth
         Security --> Interview
+        Security --> Intelligence
         Auth --> AuthGuard
         Interview --> AuthGuard --> Limits
         Limits --> Cache
@@ -58,6 +61,7 @@ flowchart TB
     subgraph Storage[MongoDB Atlas]
         Users[(Users)]:::data
         Reports[(Interview Reports\nInput hashes • PDF cache)]:::data
+        Insights[(ATS snapshots\nRoadmaps • Job comparisons)]:::data
         Usage[(AI Usage Credits)]:::data
         Blacklist[(Blacklisted Tokens)]:::data
     end
@@ -70,6 +74,7 @@ flowchart TB
     AuthGuard --> Blacklist
     Limits --> Usage
     Cache --> Reports
+    Intelligence --> Insights
     Pipeline --> Gemini
     Pdf --> Gemini
     Pdf --> Puppeteer
@@ -88,6 +93,16 @@ flowchart TB
 
 ---
 
+## Job Market Comparison Workflow
+
+1. Open **Job Market Comparison** from the workspace menu, or use **Compare Job Market** from an interview report or ATS dashboard to link that report automatically.
+2. Add 2-10 job descriptions for a target role, with optional company names and source URLs.
+3. The deterministic comparison service identifies repeated skills, high-demand tools, and recurring responsibilities across the saved descriptions.
+4. When a report is linked, the dashboard checks only the candidate's saved resume/profile evidence and presents an explainable target-role readiness score and gap map.
+5. Comparisons are private to the authenticated user; adding, removing, or refreshing a description recalculates the stored analysis without consuming Gemini credits.
+
+---
+
 ## Core Components
 
 | Layer | Components | Responsibility |
@@ -96,6 +111,8 @@ flowchart TB
 | API | Node.js, Express, Axios-compatible REST endpoints | Routes requests, enforces security controls, and exposes application health. |
 | AI | Google GenAI SDK, Zod, Zod-to-JSON-Schema | Requests schema-constrained Gemini outputs for interview reports and resume HTML. |
 | ATS Intelligence | Deterministic analysis service, MongoDB snapshots | Explains job-requirement coverage without additional Gemini usage or automatic resume changes. |
+| Learning Roadmaps | Deterministic planning and readiness services, MongoDB tasks | Turns report-grounded gaps into weekly tasks, curated resources, progress tracking, and transparent readiness progress. |
+| Job Market Comparison | Deterministic comparison service, MongoDB snapshots | Compares 2-10 role descriptions, identifies market demand, and checks a linked report for profile evidence without another Gemini request. |
 | Document Processing | Multer, PDF-Parse, Puppeteer | Accepts resume uploads, extracts text, renders ATS-oriented PDF files, and caches generated output. |
 | Data | MongoDB, Mongoose | Stores users, reports, cached PDFs, AI usage credits, and blacklisted tokens. |
 | Protection | JWT, bcryptjs, CORS, rate limiting, queues | Secures sessions and controls AI/PDF cost and resource consumption. |
@@ -147,6 +164,14 @@ CareerPilot-AI/
 └── README.md
 ```
 
+Key feature modules added to the current structure:
+
+- `backend/src/controllers/jobComparison.controller.js`, `models/jobComparison.model.js`, `routes/jobComparison.routes.js`, and `services/job-comparison.service.js`
+- `backend/src/controllers/learningRoadmap.controller.js`, roadmap/task models, routes, and deterministic planning/readiness services
+- `frontend/src/features/job-comparison/` for the comparison library, builder, dashboard, and API client
+- `frontend/src/features/roadmaps/` for roadmap creation, saved-plan views, weekly tasks, resources, and progress tracking
+- `frontend/src/components/WorkspaceMenu.jsx` for the authenticated workspace navigation
+
 ---
 
 ## Technology Stack
@@ -172,30 +197,16 @@ CareerPilot-AI/
 
 ## API Overview
 
-| Method | Endpoint | Authentication | Description |
-| --- | --- | --- | --- |
-| `GET` | `/api/health` | No | Reports API/database readiness. |
-| `POST` | `/api/auth/register` | No | Creates an account. |
-| `POST` | `/api/auth/login` | No | Starts a secure cookie-based session. |
-| `GET` | `/api/auth/oauth/google` | No | Starts Google OAuth sign-in. |
-| `GET` | `/api/auth/oauth/github` | No | Starts GitHub OAuth sign-in. |
-| `POST` | `/api/auth/logout` | Yes | Blacklists the current token and clears its cookie. |
-| `GET` | `/api/auth/get-me` | Yes | Returns the current user. |
-| `POST` | `/api/interview/` | Yes | Generates or reuses an interview report. |
-| `GET` | `/api/interview/` | Yes | Returns cursor-paginated report history. |
-| `GET` | `/api/interview/report/:interviewId` | Yes | Returns an ownership-scoped report. |
-| `DELETE` | `/api/interview/report/:interviewId` | Yes | Deletes an ownership-scoped report. |
-| `POST` | `/api/interview/resume/pdf/:interviewReportId` | Yes | Returns a cached or newly generated resume PDF. |
-| `GET` | `/api/ats-analysis/:interviewReportId` | Yes | Returns the saved ATS analysis for an owned report. |
-| `POST` | `/api/ats-analysis/:interviewReportId` | Yes | Creates or refreshes a deterministic ATS analysis. |
-| `PATCH` | `/api/ats-analysis/:analysisId/suggestions/:suggestionId` | Yes | Saves the status of an ATS improvement suggestion. |
-| `POST` | `/api/learning-roadmaps` | Yes | Creates or returns a source-grounded personalized learning roadmap. |
-| `GET` | `/api/learning-roadmaps` | Yes | Returns the authenticated user’s cursor-paginated roadmap library. |
-| `GET` | `/api/learning-roadmaps/:roadmapId` | Yes | Returns an owned roadmap and its tasks. |
-| `PATCH` | `/api/learning-roadmaps/:roadmapId` | Yes | Renames, completes, or archives an owned roadmap. |
-| `PATCH` | `/api/learning-roadmaps/:roadmapId/tasks/:taskId` | Yes | Updates task status, notes, effort, or confidence and recalculates readiness. |
+| Route group | Authentication | Purpose |
+| --- | --- | --- |
+| `GET /api/health` | No | API and database readiness. |
+| `/api/auth/*` | Mixed | Register, login, OAuth, logout, and current-user session. |
+| `/api/interview/*` | Yes | Create, reuse, view, list, delete, and export interview reports. |
+| `/api/ats-analysis/*` | Yes | Create and view deterministic ATS intelligence for a saved report. |
+| `/api/learning-roadmaps/*` | Yes | Create, view, and update personalized learning plans and task progress. |
+| `/api/job-comparisons/*` | Yes | Create, view, update, analyze, and manage private job-description comparisons. |
 
-For history pagination, use `limit` (1–50; default 12) and the `nextCursor` returned by the previous response.
+See the route files under `backend/src/routes/` for the complete endpoint contract. Report and comparison libraries use cursor pagination with `limit` and `nextCursor`.
 
 ---
 
@@ -208,6 +219,7 @@ For history pagination, use `limit` (1–50; default 12) and the `nextCursor` re
 - **Input and rendering protection:** JSON and upload limits, character caps, Puppeteer request blocking, rendering timeout, and bounded queues prevent resource exhaustion.
 - **Duplicate work prevention:** Input-hash lookup and in-flight coalescing avoid redundant Gemini calls; generated PDFs are cached with their report.
 - **Explainable ATS analysis:** Requirement and evidence matching is deterministic, stored separately from the report, and never edits resume content automatically.
+- **Private market intelligence:** Job comparisons are ownership-scoped, accept bounded input (2-10 descriptions, 8,000 characters each), detect duplicate descriptions by normalized hash, and refresh deterministically without additional AI usage.
 - **Operational readiness:** The server waits for MongoDB before listening and exposes `GET /api/health`.
 
 > For multi-instance production deployments, use a shared rate-limit store such as Redis to make short-window request limits global across API instances.
@@ -237,50 +249,25 @@ MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=use_a_long_random_secret
 GOOGLE_GENAI_API_KEY=your_gemini_api_key
 FRONTEND_URL=http://localhost:5173
-
-NODE_ENV=development
-JWT_EXPIRES_IN=1d
-
-AUTH_COOKIE_MAX_AGE_MS=86400000
-AUTH_COOKIE_SAME_SITE=lax
-AUTH_COOKIE_SECURE=false
-
-# OAuth callback base. Must be the public API URL in production.
-BACKEND_URL=http://localhost:3000
-GOOGLE_OAUTH_CLIENT_ID=your_google_client_id
-GOOGLE_OAUTH_CLIENT_SECRET=your_google_client_secret
-GITHUB_OAUTH_CLIENT_ID=your_github_client_id
-GITHUB_OAUTH_CLIENT_SECRET=your_github_client_secret
-
-# Optional: use public resolvers if a local DNS server blocks MongoDB SRV lookups.
-MONGODB_DNS_SERVERS=1.1.1.1,8.8.8.8
-
-# AI usage defaults
-AI_REPORT_RATE_LIMIT_WINDOW_MS=900000
-AI_REPORT_RATE_LIMIT_MAX=3
-AI_REPORT_IP_RATE_LIMIT_MAX=6
-AI_REPORT_DAILY_LIMIT=10
-AI_PDF_RATE_LIMIT_WINDOW_MS=900000
-AI_PDF_RATE_LIMIT_MAX=5
-AI_PDF_IP_RATE_LIMIT_MAX=10
-AI_PDF_DAILY_LIMIT=10
-AI_MAX_RESUME_CHARACTERS=15000
-AI_MAX_JOB_DESCRIPTION_CHARACTERS=8000
-AI_MAX_SELF_DESCRIPTION_CHARACTERS=4000
-GEMINI_MAX_CONCURRENT=2
-GEMINI_MAX_QUEUED=8
-PUPPETEER_MAX_CONCURRENT=1
-PUPPETEER_MAX_QUEUED=4
-PUPPETEER_TIMEOUT_MS=30000
 ```
 
-For production, use HTTPS with `NODE_ENV=production` and `AUTH_COOKIE_SECURE=true`. When the frontend is hosted on a different site, set `AUTH_COOKIE_SAME_SITE=none` together with `AUTH_COOKIE_SECURE=true`. Set `TRUST_PROXY=true` when TLS is terminated by a reverse proxy.
+These five values are sufficient for the core application. Cookie security, AI limits, queues, and input limits have safe defaults in code.
 
 If the frontend calls a deployed API, add `VITE_API_BASE_URL=https://your-api.example.com` to `frontend/.env`. It defaults to `http://localhost:3000` for local development.
 
 ### OAuth provider setup
 
-Create a Google OAuth 2.0 web client and a GitHub OAuth App, then add the client IDs and secrets above. Configure these callback URLs exactly:
+OAuth is optional. Enable it only when Google or GitHub sign-in is needed:
+
+```env
+BACKEND_URL=http://localhost:3000
+GOOGLE_OAUTH_CLIENT_ID=your_google_client_id
+GOOGLE_OAUTH_CLIENT_SECRET=your_google_client_secret
+GITHUB_OAUTH_CLIENT_ID=your_github_client_id
+GITHUB_OAUTH_CLIENT_SECRET=your_github_client_secret
+```
+
+Create a Google OAuth 2.0 web client and a GitHub OAuth App, then configure these callback URLs exactly:
 
 ```text
 http://localhost:3000/api/auth/oauth/google/callback
