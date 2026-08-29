@@ -8,6 +8,9 @@ import AtsDashboard from "./features/interview/pages/AtsDashboard";
 import RoadmapLibrary from "./features/roadmaps/pages/RoadmapLibrary";
 import RoadmapBuilder from "./features/roadmaps/pages/RoadmapBuilder";
 import RoadmapDetail from "./features/roadmaps/pages/RoadmapDetail";
+import ComparisonLibrary from "./features/job-comparison/pages/ComparisonLibrary";
+import ComparisonBuilder from "./features/job-comparison/pages/ComparisonBuilder";
+import ComparisonDashboard from "./features/job-comparison/pages/ComparisonDashboard";
 
 export const router = createBrowserRouter([
     {
@@ -35,5 +38,14 @@ export const router = createBrowserRouter([
     },{
         path:"/roadmaps/:roadmapId",
         element: <Protected><RoadmapDetail /></Protected>
+    },{
+        path:"/job-comparisons",
+        element: <Protected><ComparisonLibrary /></Protected>
+    },{
+        path:"/job-comparisons/new",
+        element: <Protected><ComparisonBuilder /></Protected>
+    },{
+        path:"/job-comparisons/:comparisonId",
+        element: <Protected><ComparisonDashboard /></Protected>
     }
 ])
