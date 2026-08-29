@@ -156,6 +156,9 @@ export default function AtsDashboard() {
                         <button className="ats-button ats-button--secondary" onClick={() => navigate(`/roadmaps/new?source=${interviewId}`)}>
                             <Icon name="spark" /> Build learning roadmap
                         </button>
+                        <button className="ats-button ats-button--secondary" onClick={() => navigate(`/job-comparisons/new?source=${interviewId}`)}>
+                            <Icon name="spark" /> Compare job market
+                        </button>
                         <button className="ats-button ats-button--secondary" onClick={() => loadAnalysis({ regenerate: true })} disabled={isRefreshing}>
                             <Icon name="refresh" /> {isRefreshing ? "Refreshing" : "Refresh analysis"}
                         </button>

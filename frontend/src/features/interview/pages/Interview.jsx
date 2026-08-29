@@ -337,6 +337,17 @@ const Interview = () => {
                         Learning Roadmap
                     </motion.button>
                     <motion.button
+                        onClick={() => navigate(`/job-comparisons/new?source=${interviewId}`)}
+                        className="iv-sidebar__ats"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M5 4v16M19 4v16M5 7h5M5 12h9M5 17h5M14 7h5M18 12h1M14 17h5" />
+                        </svg>
+                        Compare Job Market
+                    </motion.button>
+                    <motion.button
                         onClick={handleDownloadResume}
                         disabled={downloading}
                         className={`button primary-button iv-sidebar__download ${downloadSuccess ? 'success-button' : ''}`}
