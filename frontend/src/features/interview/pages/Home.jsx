@@ -5,6 +5,7 @@ import { useInterview } from "../hooks/useInterview.js";
 import { useNavigate } from "react-router";
 import ParticleField from "../../../components/ParticleField";
 import ProfileMenu from "../../../components/ProfileMenu";
+import AnimatedConfirmButton from "../../../components/AnimatedConfirmButton";
 
 /* ── Animation Variants ── */
 const fadeUp = {
@@ -254,23 +255,15 @@ const Home = () => {
                                 animate="animate"
                                 whileHover={{ y: -4 }}
                             >
-                                <button
-                                    className="report-delete-btn"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        if (confirm("Are you sure you want to delete this interview plan?")) {
-                                            deleteReport(report._id);
-                                        }
-                                    }}
-                                    title="Delete plan"
-                                >
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                        <polyline points="3 6 5 6 21 6" />
-                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                                        <line x1="10" y1="11" x2="10" y2="17" />
-                                        <line x1="14" y1="11" x2="14" y2="17" />
-                                    </svg>
-                                </button>
+                                <AnimatedConfirmButton
+                                    triggerLabel={`Delete ${report.title || "interview plan"}`}
+                                    triggerClassName="report-delete-btn"
+                                    triggerIcon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></svg>}
+                                    title="Delete this interview plan?"
+                                    description={`Delete \"${report.title || "Untitled Position"}\" from your interview plans. This cannot be undone.`}
+                                    confirmLabel="Delete plan"
+                                    onConfirm={() => deleteReport(report._id)}
+                                />
                                 <h3>{report.title || 'Untitled Position'}</h3>
                                 <p className='report-meta'>Generated on {new Date(report.createdAt).toLocaleDateString()}</p>
                                 <p className={`match-score ${report.matchScore >= 80 ? 'score--high' : report.matchScore >= 60 ? 'score--mid' : 'score--low'}`}>Match Score: {report.matchScore}%</p>
