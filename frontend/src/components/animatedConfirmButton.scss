@@ -1,0 +1,18 @@
+.animated-confirm { display: contents; }
+.animated-confirm__overlay { position: fixed; z-index: 120; inset: 0; display: grid; place-items: center; padding: 1rem; background: rgba(3, 6, 15, .68); backdrop-filter: blur(8px); }
+.animated-confirm__dialog { position: relative; width: min(100%, 470px); overflow: hidden; padding: 1.7rem; border: 1px solid var(--border-color); border-radius: 24px; background: var(--card-bg); color: var(--text-white); box-shadow: 0 28px 75px rgba(0, 0, 0, .42); }
+.animated-confirm__dialog::before { content: ""; position: absolute; inset: 0 0 auto; height: 2px; background: linear-gradient(90deg, #ef476f, #9a63f4, #4edaf0); }
+.animated-confirm__close { position: absolute; top: 1rem; right: 1rem; display: grid; place-items: center; width: 2rem; height: 2rem; border: 0; border-radius: 50%; background: transparent; color: var(--text-muted); cursor: pointer; }
+.animated-confirm__close:hover { background: rgba(127, 139, 180, .12); color: var(--text-white); }
+.animated-confirm__close svg, .animated-confirm__icon svg { width: 1.1rem; height: 1.1rem; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.animated-confirm__icon { display: grid; place-items: center; width: 2.8rem; height: 2.8rem; margin-bottom: 1rem; border-radius: 11px; background: rgba(239, 71, 111, .12); color: #ff9caf; }
+.animated-confirm__icon svg { width: 1.45rem; height: 1.45rem; }
+.animated-confirm__dialog h2 { margin: 0; font-size: 1.35rem; letter-spacing: -.03em; }
+.animated-confirm__dialog p { margin: .75rem 0 1.4rem; color: var(--text-muted); line-height: 1.55; }
+.animated-confirm__actions { display: flex; gap: .65rem; }
+.animated-confirm__actions button { flex: 1; min-height: 2.75rem; border: 1px solid var(--border-color); border-radius: 999px; background: rgba(127, 139, 180, .1); color: var(--text-white); font: inherit; font-weight: 700; cursor: pointer; }
+.animated-confirm__actions button:hover:not(:disabled) { background: rgba(127, 139, 180, .18); }
+.animated-confirm__actions .animated-confirm__approve { border: 0; background: linear-gradient(100deg, #e83c72, #9c4ed2); color: #fff; box-shadow: 0 10px 24px rgba(225, 55, 113, .2); }
+.animated-confirm__actions .animated-confirm__approve:hover:not(:disabled) { background: linear-gradient(100deg, #f04b7f, #ac5cdd); }
+.animated-confirm__actions button:disabled, .animated-confirm__close:disabled { cursor: wait; opacity: .65; }
+@media (max-width: 540px) { .animated-confirm__dialog { padding: 1.45rem; border-radius: 20px; }.animated-confirm__actions { flex-direction: column-reverse; } }
