@@ -12,7 +12,7 @@
 
 ![Backend](https://img.shields.io/badge/Backend-Node.js%20%2B%20Express-2f855a?style=flat-square&logo=nodedotjs&logoColor=white)
 ![Frontend](https://img.shields.io/badge/Frontend-React%2019%20%2B%20Vite-2563eb?style=flat-square&logo=react&logoColor=white)
-![AI](https://img.shields.io/badge/AI-Google%20Gemini%202.5%20Flash-7c3aed?style=flat-square&logo=google-gemini&logoColor=white)
+![AI](https://img.shields.io/badge/AI-Google%20Gemini%202.5%20Pro-7c3aed?style=flat-square&logo=google-gemini&logoColor=white)
 ![Database](https://img.shields.io/badge/Database-MongoDB-16a34a?style=flat-square&logo=mongodb&logoColor=white)
 ![Language](https://img.shields.io/badge/Language-JavaScript-f59e0b?style=flat-square&logo=javascript&logoColor=white)
 ![License](https://img.shields.io/badge/License-ISC-eab308?style=flat-square)
@@ -25,7 +25,7 @@ CareerPilot AI is a full-stack, AI-powered career-preparation platform. It trans
 
 ## Highlights
 
-- Generate structured, role-specific interview reports with **Google Gemini 2.5 Flash**.
+- Generate structured, role-specific interview reports with **Google Gemini 2.5 Pro**.
 - Extract text from uploaded resumes with `pdf-parse`.
 - Produce a match score, skill-gap analysis, technical and behavioral questions, and a day-wise preparation plan.
 - Generate and cache resume PDFs with **Puppeteer** to avoid repeat rendering work.
@@ -88,7 +88,7 @@ flowchart TB
         Blacklist[(Blacklisted Tokens)]:::data
     end
 
-    Gemini[Google Gemini 2.5 Flash]:::external
+    Gemini[Google Gemini 2.5 Pro]:::external
     Puppeteer[Puppeteer / Headless Chrome]:::external
 
     ApiClient -->|HTTPS requests| Security
@@ -287,10 +287,11 @@ PORT=3000
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=use_a_long_random_secret
 GOOGLE_GENAI_API_KEY=your_gemini_api_key
+GEMINI_MODEL=gemini-2.5-pro
 FRONTEND_URL=http://localhost:5173
 ```
 
-These five values are sufficient for the core application. Cookie security, AI limits, queues, and input limits have safe defaults in code.
+These values are sufficient for the core application. Cookie security, AI limits, queues, and input limits have safe defaults in code. You can override `GEMINI_MODEL` later if your deployment needs a different performance or cost profile.
 
 If the frontend calls a deployed API, add `VITE_API_BASE_URL=https://your-api.example.com` to `frontend/.env`. It defaults to `http://localhost:3000` for local development.
 

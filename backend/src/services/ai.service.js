@@ -10,6 +10,12 @@ const ai = new GoogleGenAI({
     apiKey: process.env.GOOGLE_GENAI_API_KEY,
 });
 
+// Gemini 2.5 Pro provides stronger reasoning and more consistent structured
+// outputs for interview analysis and tailored-resume generation. Keep the
+// model configurable so deployments can opt into a faster/cost-focused model
+// without a code change.
+const GEMINI_MODEL = process.env.GEMINI_MODEL?.trim() || "gemini-2.5-pro";
+
 const usageConfig = getAiUsageConfig();
 const geminiQueue = new WorkQueue({
     resourceName: "AI generation service",
@@ -63,7 +69,7 @@ async function generateInterviewReport({ resume, selfDescription, jobDescription
     `
 
     const response = await geminiQueue.run(() => ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: GEMINI_MODEL,
         contents: prompt,
         config: {
             responseMimeType: "application/json",
@@ -179,7 +185,7 @@ ATS RULES:
 Return a JSON object with one field "html" containing the complete HTML string.`
 
     const response = await geminiQueue.run(() => ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: GEMINI_MODEL,
         contents: prompt,
         config: {
             responseMimeType: "application/json",
