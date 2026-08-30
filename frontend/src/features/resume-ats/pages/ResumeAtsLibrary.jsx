@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router";
 import ParticleField from "../../../components/ParticleField";
 import ProfileMenu from "../../../components/ProfileMenu";
+import AnimatedConfirmButton from "../../../components/AnimatedConfirmButton";
 import { createResumeAtsScan, deleteResumeAtsScan, getResumeAtsScans } from "../services/resume-ats.api";
 import "../style/resumeAts.scss";
 
@@ -76,9 +77,7 @@ export default function ResumeAtsLibrary() {
         }
     };
 
-    const removeScan = async (event, scan) => {
-        event.stopPropagation();
-        if (!window.confirm(`Delete the saved ATS scan for "${scan.displayName}"? This cannot be undone.`)) return;
+    const removeScan = async (scan) => {
         setError("");
         setDeletingScanId(scan._id);
         try {
@@ -136,7 +135,7 @@ export default function ResumeAtsLibrary() {
                 <header><div><span className="resume-ats-eyebrow">SAVED SCANS</span><h2>Your resume history</h2></div></header>
                 {isLoading && <p className="resume-ats-state">Loading saved scans...</p>}
                 {!isLoading && !scans.length && <p className="resume-ats-state">Your completed ATS checks will appear here.</p>}
-                <div className="resume-ats-scan-grid">{scans.map((scan, index) => <motion.article key={scan._id} className="resume-ats-scan-card" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * .04 }} onClick={() => navigate(`/resume-ats/${scan._id}`)}><div><span>{new Date(scan.createdAt).toLocaleDateString()}</span><h3>{scan.displayName}</h3><p>{fileSize(scan.fileSize)}</p></div><div className="resume-ats-scan-card__actions"><div className="resume-ats-scan-card__score"><strong>{scan.result.overallScore}</strong><span>/100<br />{scan.result.label}</span></div><button className="resume-ats-scan-card__delete" type="button" title={`Delete ${scan.displayName}`} aria-label={`Delete ${scan.displayName}`} disabled={deletingScanId === scan._id} onClick={(event) => removeScan(event, scan)}>{deletingScanId === scan._id ? <span className="resume-ats-scan-card__spinner" aria-label="Deleting" /> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6m4-6v6M9 7l1-2h4l1 2m-9 0 1 13h10l1-13" /></svg>}</button></div></motion.article>)}</div>
+                <div className="resume-ats-scan-grid">{scans.map((scan, index) => <motion.article key={scan._id} className="resume-ats-scan-card" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * .04 }} onClick={() => navigate(`/resume-ats/${scan._id}`)}><div><span>{new Date(scan.createdAt).toLocaleDateString()}</span><h3>{scan.displayName}</h3><p>{fileSize(scan.fileSize)}</p></div><div className="resume-ats-scan-card__actions"><div className="resume-ats-scan-card__score"><strong>{scan.result.overallScore}</strong><span>/100<br />{scan.result.label}</span></div><AnimatedConfirmButton triggerLabel={`Delete ${scan.displayName}`} triggerClassName="resume-ats-scan-card__delete" triggerIcon={deletingScanId === scan._id ? <span className="resume-ats-scan-card__spinner" aria-label="Deleting" /> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6m4-6v6M9 7l1-2h4l1 2m-9 0 1 13h10l1-13" /></svg>} title="Delete this ATS scan?" description={`Delete \"${scan.displayName}\" from your resume history. This cannot be undone.`} confirmLabel="Delete scan" disabled={deletingScanId === scan._id} onConfirm={() => removeScan(scan)} /></div></motion.article>)}</div>
             </section>
         </section>
     </main>;

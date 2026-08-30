@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router";
 import ParticleField from "../../../components/ParticleField";
+import AnimatedConfirmButton from "../../../components/AnimatedConfirmButton";
 import { compareResumeAtsScans, deleteResumeAtsScan, getResumeAtsScan, getResumeAtsScans } from "../services/resume-ats.api";
 import "../style/resumeAts.scss";
 
@@ -25,7 +26,7 @@ export default function ResumeAtsDetail() {
     useEffect(() => { let active = true; Promise.all([getResumeAtsScan(scanId), getResumeAtsScans()]).then(([scanResult, listResult]) => { if (!active) return; setScan(scanResult.scan); setScans(listResult.scans.filter((item) => item._id !== scanId)); }).catch((requestError) => active && setError(requestError.response?.data?.message || "We could not load this ATS scan.")); return () => { active = false; }; }, [scanId]);
     const missingSections = useMemo(() => scan?.result.sections.filter((section) => !section.present) || [], [scan]);
     const compare = async () => { if (!comparisonId) return; setIsComparing(true); try { const result = await compareResumeAtsScans(comparisonId, scanId); setComparison(result.comparison); } catch (requestError) { setError(requestError.response?.data?.message || "Resume versions could not be compared."); } finally { setIsComparing(false); } };
-    const remove = async () => { if (!window.confirm("Delete this saved ATS scan?")) return; try { await deleteResumeAtsScan(scanId); navigate("/resume-ats", { replace: true }); } catch (requestError) { setError(requestError.response?.data?.message || "Scan could not be deleted."); } };
+    const remove = async () => { try { await deleteResumeAtsScan(scanId); navigate("/resume-ats", { replace: true }); } catch (requestError) { setError(requestError.response?.data?.message || "Scan could not be deleted."); } };
 
     if (!scan && !error) return <main className="resume-ats-page resume-ats-state-page">Loading your ATS scan...</main>;
     if (!scan) return <main className="resume-ats-page resume-ats-state-page"><section className="resume-ats-empty"><h1>ATS scan unavailable</h1><p>{error}</p><button className="button primary-button" onClick={() => navigate("/resume-ats")}>Return to ATS checker</button></section></main>;
@@ -33,7 +34,7 @@ export default function ResumeAtsDetail() {
     const recommendations = result.recommendations?.length ? result.recommendations : result.findings.slice(0, 3).map((finding) => ({ focus: finding.title, priority: finding.priority, why: finding.evidence || finding.category, action: finding.detail }));
 
     return <main className="resume-ats-page"><ParticleField className="resume-ats-page__particles" /><section className="resume-ats-detail">
-        <header className="resume-ats-detail__header"><div><button className="resume-ats-back" type="button" onClick={() => navigate("/resume-ats")}>← Resume ATS Checker</button><span className="resume-ats-eyebrow">SAVED RESUME AUDIT</span><h1>{scan.displayName}</h1><p>{scan.originalFileName} · {new Date(scan.createdAt).toLocaleDateString()}</p></div><div className="resume-ats-detail__actions"><button type="button" onClick={() => navigate("/resume-ats")}>Upload revision</button><button type="button" className="resume-ats-delete" onClick={remove}>Delete</button></div></header>
+        <header className="resume-ats-detail__header"><div><button className="resume-ats-back" type="button" onClick={() => navigate("/resume-ats")}>← Resume ATS Checker</button><span className="resume-ats-eyebrow">SAVED RESUME AUDIT</span><h1>{scan.displayName}</h1><p>{scan.originalFileName} · {new Date(scan.createdAt).toLocaleDateString()}</p></div><div className="resume-ats-detail__actions"><button type="button" onClick={() => navigate("/resume-ats")}>Upload revision</button><AnimatedConfirmButton triggerLabel="Delete scan" triggerClassName="resume-ats-delete" title="Delete this ATS scan?" description={`Delete \"${scan.displayName}\" from your saved resume history. This cannot be undone.`} confirmLabel="Delete scan" onConfirm={remove} /></div></header>
         {error && <p className="resume-ats-error" role="alert">{error}</p>}
         <motion.section className="resume-ats-hero" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}><ScoreRing score={result.overallScore} /><div><span className="resume-ats-eyebrow">ATS-READINESS ESTIMATE</span><h2>{result.label}</h2><p>{result.disclaimer}</p></div><div className="resume-ats-parser-status"><b>{result.parserHealth.textExtracted ? "Text extracted" : "Text not extracted"}</b><span>{result.parserHealth.wordCount} words · {result.parserHealth.characterCount} characters</span></div></motion.section>
         <section className="resume-ats-score-grid">{result.scores.map((item) => <article key={item.key}><span>{item.label}</span><strong>{item.score}<small>/100</small></strong><i><b style={{ width: `${item.score}%` }} /></i><p>{item.summary}</p></article>)}</section>
