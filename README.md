@@ -1,4 +1,25 @@
-# CareerPilot AI
+<div align="center">
+
+# 🚀 CareerPilot AI
+
+<hr />
+
+### An Enterprise-Grade AI Career Readiness & Job Intelligence Platform
+
+**ATS Intelligence • Personalized Learning Roadmaps • Job Market Comparison • AI Interview Strategy • ATS Resume Generation**
+
+<br />
+
+![Backend](https://img.shields.io/badge/Backend-Node.js%20%2B%20Express-2f855a?style=flat-square&logo=nodedotjs&logoColor=white)
+![Frontend](https://img.shields.io/badge/Frontend-React%2019%20%2B%20Vite-2563eb?style=flat-square&logo=react&logoColor=white)
+![AI](https://img.shields.io/badge/AI-Google%20Gemini%202.5%20Flash-7c3aed?style=flat-square&logo=google-gemini&logoColor=white)
+![Database](https://img.shields.io/badge/Database-MongoDB-16a34a?style=flat-square&logo=mongodb&logoColor=white)
+![Language](https://img.shields.io/badge/Language-JavaScript-f59e0b?style=flat-square&logo=javascript&logoColor=white)
+![License](https://img.shields.io/badge/License-ISC-eab308?style=flat-square)
+
+</div>
+
+---
 
 CareerPilot AI is a full-stack, AI-powered career-preparation platform. It transforms a candidate's resume or profile and a target job description into an interview-readiness report, including a match score, skill gaps, targeted questions, and a preparation roadmap. Users can also generate an ATS-oriented resume PDF from a saved report.
 
