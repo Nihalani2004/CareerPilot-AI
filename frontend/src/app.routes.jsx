@@ -13,8 +13,17 @@ import ComparisonBuilder from "./features/job-comparison/pages/ComparisonBuilder
 import ComparisonDashboard from "./features/job-comparison/pages/ComparisonDashboard";
 import ResumeAtsLibrary from "./features/resume-ats/pages/ResumeAtsLibrary";
 import ResumeAtsDetail from "./features/resume-ats/pages/ResumeAtsDetail";
+import LandingPage from "./features/landing/pages/LandingPage";
 
 export const router = createBrowserRouter([
+    {
+        path: "/",
+        element: <LandingPage />
+    },
+    {
+        path: "/welcome",
+        element: <LandingPage />
+    },
     {
         path: "/login",
         element: <Login />
@@ -23,7 +32,7 @@ export const router = createBrowserRouter([
         path: "/register",
         element: <Register />
     },{
-        path:"/",
+        path:"/app",
         element: <Protected><Home /></Protected>
     },{
         path:"/interview/:interviewId",

@@ -40,7 +40,7 @@ const Login = () => {
         setLoginError("")
         try {
             await handleLogin({ email, password })
-            navigate("/")
+            navigate("/app")
         } catch (error) {
             setLoginError(error.response?.status === 400
                 ? "Invalid email or password."

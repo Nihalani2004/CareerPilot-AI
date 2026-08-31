@@ -44,8 +44,8 @@ export default function WorkspaceMenu() {
                     <h2>Build your next move.</h2>
                     <p>Start a focused interview plan or compare the roles you are targeting.</p>
                     <nav>
-                        <button type="button" className="workspace-menu__home" onClick={() => goTo("/")}><MenuIcon type="home" /><span><strong>Home</strong><small>Return to your interview workspace</small></span></button>
-                        <button type="button" onClick={() => goTo("/")}><MenuIcon type="plan" /><span><strong>Create Custom Interview Plan</strong><small>Analyze one role and your profile</small></span></button>
+                        <button type="button" className="workspace-menu__home" onClick={() => goTo("/app")}><MenuIcon type="home" /><span><strong>Home</strong><small>Return to your interview workspace</small></span></button>
+                        <button type="button" onClick={() => goTo("/app")}><MenuIcon type="plan" /><span><strong>Create Custom Interview Plan</strong><small>Analyze one role and your profile</small></span></button>
                         <button type="button" onClick={() => goTo("/resume-ats")}><MenuIcon type="resumeAts" /><span><strong>Resume ATS Checker</strong><small>Check parser readiness and resume quality</small></span></button>
                         <button type="button" onClick={() => goTo("/job-comparisons")}><MenuIcon type="compare" /><span><strong>Job Market Comparison</strong><small>Find recurring demand across roles</small></span></button>
                     </nav>
