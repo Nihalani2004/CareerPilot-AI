@@ -13,9 +13,16 @@ function FeatureVisual({ type }) {
 export default function LandingCapabilities() {
   const sectionRef = useRef(null);
   const reduceMotion = useReducedMotion();
-  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start end", "start center"] });
-  const headerY = useTransform(scrollYProgress, [0, 1], [92, 0]);
-  const headerOpacity = useTransform(scrollYProgress, [0, .22, 1], [0, .24, 1]);
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start end", "start 42%"] });
+  const headerY = useTransform(scrollYProgress, [0, .22, 1], [170, 110, 0]);
+  const headerOpacity = useTransform(scrollYProgress, [0, .24, .72, 1], [0, .16, .8, 1]);
 
-  return <section ref={sectionRef} id="capabilities" className="landing-capabilities landing-section" data-section="capabilities"><motion.header className="landing-section-heading" style={reduceMotion ? undefined : { y: headerY, opacity: headerOpacity }}><motion.span className="landing-eyebrow" initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: .2 }} transition={{ duration: .48, ease: [0.22, 1, .36, 1] }}>CAPABILITIES</motion.span><motion.h2 initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: .2 }} transition={{ delay: .08, duration: .68, ease: [0.22, 1, .36, 1] }}>Everything you need to prepare with <em>intent.</em></motion.h2><motion.p initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: .2 }} transition={{ delay: .16, duration: .6, ease: [0.22, 1, .36, 1] }}>CareerPilot keeps the role, your evidence, and the next action in the same focused workflow.</motion.p></motion.header><div className="landing-capabilities__list">{landingCapabilities.map((feature, index) => <motion.article className={`landing-capability landing-capability--${feature.id}`} key={feature.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: .24 }} transition={{ duration: .64, delay: index % 2 ? .08 : 0, ease: [0.22, 1, .36, 1] }}><div className="landing-capability__copy"><span className="landing-capability__number">0{index + 1}</span><p className="landing-eyebrow">{feature.eyebrow}</p><h3>{feature.title}</h3><p>{feature.body}</p><div className="landing-capability__tags">{feature.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div><FeatureVisual type={feature.id} /></motion.article>)}</div></section>;
+  return <section ref={sectionRef} id="capabilities" className="landing-capabilities landing-section" data-section="capabilities">
+    <motion.header className="landing-section-heading" style={reduceMotion ? undefined : { y: headerY, opacity: headerOpacity, willChange: "transform, opacity" }}>
+      <span className="landing-eyebrow">CAPABILITIES</span>
+      <h2>Everything you need to prepare with <em>intent.</em></h2>
+      <p>CareerPilot keeps the role, your evidence, and the next action in the same focused workflow.</p>
+    </motion.header>
+    <div className="landing-capabilities__list">{landingCapabilities.map((feature, index) => <motion.article className={`landing-capability landing-capability--${feature.id}`} key={feature.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: .24 }} transition={{ duration: .64, delay: index % 2 ? .08 : 0, ease: [0.22, 1, .36, 1] }}><div className="landing-capability__copy"><span className="landing-capability__number">0{index + 1}</span><p className="landing-eyebrow">{feature.eyebrow}</p><h3>{feature.title}</h3><p>{feature.body}</p><div className="landing-capability__tags">{feature.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div><FeatureVisual type={feature.id} /></motion.article>)}</div>
+  </section>;
 }
