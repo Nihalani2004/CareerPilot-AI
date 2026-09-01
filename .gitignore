@@ -32,3 +32,5 @@ lerna-debug.log*
 *.sln
 *.sw?
 resume-analysis-service/.venv/
+__pycache__/
+*.py[cod]
