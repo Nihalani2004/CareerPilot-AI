@@ -30,7 +30,7 @@
 .resume-ats-upload__privacy { color: var(--text-muted); font-size: .72rem; }
 .resume-ats-disclaimer { max-width: 820px; margin: .8rem auto 1.9rem; text-align: center; }
 
-.resume-ats-processing { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(220px, .55fr) minmax(0, 1fr); max-width: 1020px; min-height: 460px; margin: 10vh auto 0; overflow: hidden; border: 1px solid var(--border-color); border-radius: 22px; background: linear-gradient(130deg, rgba(91, 67, 175, .25), var(--card-bg)); box-shadow: 0 22px 60px rgba(0, 0, 0, .2); }
+.resume-ats-processing { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(220px, .55fr) minmax(0, 1fr); max-width: 1020px; min-height: 460px; margin: clamp(1.5rem, 3.5vh, 3rem) auto 0; overflow: hidden; border: 1px solid var(--border-color); border-radius: 22px; background: linear-gradient(130deg, rgba(91, 67, 175, .25), var(--card-bg)); box-shadow: 0 22px 60px rgba(0, 0, 0, .2); }
 .resume-ats-processing__score { display: grid; align-content: center; justify-items: center; gap: .7rem; padding: 2rem; border-right: 1px solid var(--border-color); text-align: center; background: rgba(10, 15, 33, .19); }
 .resume-ats-processing__score .resume-ats-eyebrow { margin: 0; }
 .resume-ats-processing__score > strong { font-size: 1.1rem; }
