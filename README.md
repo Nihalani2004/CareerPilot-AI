@@ -25,7 +25,7 @@ CareerPilot AI is a full-stack, AI-powered career-preparation platform. It trans
 
 ## Highlights
 
-- Generate structured, role-specific interview reports with **Google Gemini 2.5 Pro**.
+- Generate structured, role-specific interview reports with **Google Gemini 3.6 Flash**.
 - Extract text from uploaded resumes with `pdf-parse`.
 - Produce a match score, skill-gap analysis, technical and behavioral questions, and a day-wise preparation plan.
 - Generate and cache resume PDFs with **Puppeteer** to avoid repeat rendering work.
@@ -88,7 +88,7 @@ flowchart TB
         Blacklist[(Blacklisted Tokens)]:::data
     end
 
-    Gemini[Google Gemini 2.5 Pro]:::external
+    Gemini[Google Gemini 3.6 Flash]:::external
     Puppeteer[Puppeteer / Headless Chrome]:::external
 
     ApiClient -->|HTTPS requests| Security
@@ -287,7 +287,7 @@ PORT=3000
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=use_a_long_random_secret
 GOOGLE_GENAI_API_KEY=your_gemini_api_key
-GEMINI_MODEL=gemini-2.5-pro
+GEMINI_MODEL=gemini-3.6-flash
 FRONTEND_URL=http://localhost:5173
 ```
 

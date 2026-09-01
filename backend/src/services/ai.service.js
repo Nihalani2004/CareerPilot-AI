@@ -2,6 +2,7 @@ const { GoogleGenAI } = require("@google/genai");
 const { z } = require("zod");
 const { zodToJsonSchema } = require("zod-to-json-schema");
 const puppeteer = require("puppeteer");
+const { getGeminiModel, isRetiredGeminiModel } = require("../config/ai-model");
 const { getAiUsageConfig } = require("../config/ai-usage");
 const { WorkQueue } = require("./work-queue.service");
 
@@ -10,11 +11,16 @@ const ai = new GoogleGenAI({
     apiKey: process.env.GOOGLE_GENAI_API_KEY,
 });
 
-// Gemini 2.5 Pro provides stronger reasoning and more consistent structured
-// outputs for interview analysis and tailored-resume generation. Keep the
-// model configurable so deployments can opt into a faster/cost-focused model
-// without a code change.
-const GEMINI_MODEL = process.env.GEMINI_MODEL?.trim() || "gemini-2.5-pro";
+// Keep the model configurable while using Gemini 3.6 Flash by default. It is
+// stable, supports structured output, and works with the API free tier.
+// A stale GEMINI_MODEL=gemini-2.5-pro deployment value is safely upgraded.
+const GEMINI_MODEL = getGeminiModel();
+
+if (isRetiredGeminiModel()) {
+    console.warn(
+        "GEMINI_MODEL=gemini-2.5-pro is retired; using gemini-3.6-flash instead."
+    );
+}
 
 const usageConfig = getAiUsageConfig();
 const geminiQueue = new WorkQueue({
