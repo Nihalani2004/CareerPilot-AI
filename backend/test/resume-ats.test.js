@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { ANALYSIS_VERSION, buildResumeAtsAnalysis, createContentHash } = require("../src/services/resume-ats.service");
+const { ANALYSIS_VERSION, buildResumeAtsAnalysis, createContentHash, mergePythonResumeAnalysis } = require("../src/services/resume-ats.service");
 
 const strongResume = `
 Mayank Nihalani
@@ -28,7 +28,7 @@ AWS Cloud Practitioner
 
 test("builds an explainable bounded ATS-readiness score for a structured resume", () => {
     const result = buildResumeAtsAnalysis(strongResume);
-    assert.equal(ANALYSIS_VERSION, 3);
+    assert.equal(ANALYSIS_VERSION, 4);
     assert.ok(result.overallScore >= 70 && result.overallScore <= 100);
     assert.equal(result.scores.length, 6);
     assert.equal(result.contacts.email, true);
@@ -60,4 +60,30 @@ test("creates stable binary content hashes for duplicate scan detection", () => 
     const different = createContentHash(Buffer.from("different resume bytes"));
     assert.equal(first, second);
     assert.notEqual(first, different);
+});
+
+test("merges validated Python document signals into an explainable hybrid result", () => {
+    const base = buildResumeAtsAnalysis(strongResume);
+    const merged = mergePythonResumeAnalysis(base, {
+        engineVersion: "1.0.0",
+        text: strongResume,
+        scores: { parseability: 92, layout: 96, sections: 100, evidence: 90, skills: 96, chronology: 100, overall: 95 },
+        skills: ["React", "Node.js", "Docker"],
+        findings: [{ id: "python-layout-0", category: "Document layout", priority: "medium", title: "Simplify the document layout", detail: "Use a text-first layout.", scoreImpact: 5, evidence: "Potential table detected" }],
+        sections: [],
+        document: { pageCount: 1, blockCount: 18, imageCount: 0, tableCount: 0, multiColumnPages: 0, layoutWarnings: [] },
+    });
+
+    assert.equal(merged.analysisMeta.mode, "python-enhanced");
+    assert.equal(merged.analysisMeta.engineVersion, "1.0.0");
+    assert.ok(merged.overallScore >= base.overallScore);
+    assert.ok(merged.findings.some((finding) => finding.id === "python-layout-0"));
+    assert.equal(merged.scores.length, 6);
+});
+
+test("keeps deterministic analysis available when Python enrichment is unavailable", () => {
+    const base = buildResumeAtsAnalysis(strongResume);
+    const fallback = mergePythonResumeAnalysis(base, null);
+    assert.equal(fallback.analysisMeta.mode, "deterministic-fallback");
+    assert.equal(fallback.overallScore, base.overallScore);
 });

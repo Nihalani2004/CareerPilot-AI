@@ -29,6 +29,7 @@ CareerPilot AI is a full-stack, AI-powered career-preparation platform. It trans
 - Extract text from uploaded resumes with `pdf-parse`.
 - Produce a match score, skill-gap analysis, technical and behavioral questions, and a day-wise preparation plan.
 - Generate and cache resume PDFs with **Puppeteer** to avoid repeat rendering work.
+- Run a parser-backed Resume ATS Checker with an optional local Python document-analysis service for layout, chronology, skills, and evidence checks.
 - Provide an **ATS Intelligence Dashboard** with explainable requirement coverage, evidence mapping, section health, parsing signals, and safe resume-improvement actions.
 - Turn AI-identified gaps into **Personalized Learning Roadmaps** with realistic weekly tasks, estimated effort, curated resources, progress tracking, and transparent interview-readiness progress.
 - Compare 2-10 job descriptions in a separate **Job Market Comparison** workspace to surface repeated skills, high-demand tools, shared responsibilities, per-company requirement coverage, and profile-backed target-role readiness.
