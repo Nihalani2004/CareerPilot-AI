@@ -2,7 +2,8 @@ const mongoose = require("mongoose");
 const pdfParse = require("pdf-parse");
 const mammoth = require("mammoth");
 const resumeAtsScanModel = require("../models/resumeAtsScan.model");
-const { ANALYSIS_VERSION, buildResumeAtsAnalysis, createContentHash } = require("../services/resume-ats.service");
+const { ANALYSIS_VERSION, buildResumeAtsAnalysis, createContentHash, mergePythonResumeAnalysis } = require("../services/resume-ats.service");
+const { analyzeResumeWithPython } = require("../services/python-resume-analysis.service");
 const { buildCursorFilter, decodeReportCursor, encodeReportCursor, parseReportPageLimit } = require("../services/report-pagination.service");
 
 function getUserId(req) { return req.user.id || req.user._id; }
@@ -45,7 +46,18 @@ async function createResumeAtsScanController(req, res) {
         if (existing) return res.status(200).json({ message: "Existing ATS scan returned.", cached: true, scan: existing });
 
         const extractedText = await parseResume(req.file);
-        const result = buildResumeAtsAnalysis(extractedText);
+        const pythonReview = await analyzeResumeWithPython({
+            buffer: req.file.buffer,
+            fileName: req.file.originalname,
+            mimeType: req.file.mimetype,
+        });
+        const analysisText = pythonReview.available && pythonReview.analysis.text
+            ? pythonReview.analysis.text
+            : extractedText;
+        const result = mergePythonResumeAnalysis(
+            buildResumeAtsAnalysis(analysisText),
+            pythonReview.available ? pythonReview.analysis : null,
+        );
         const requestedName = typeof req.body?.displayName === "string" ? req.body.displayName.trim().slice(0, 120) : "";
         const scan = await resumeAtsScanModel.create({
             user: userId,

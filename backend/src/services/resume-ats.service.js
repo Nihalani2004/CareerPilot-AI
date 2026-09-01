@@ -2,7 +2,7 @@ const crypto = require("crypto");
 
 // Increment when scoring semantics change so an older cached scan is never
 // returned as though it had been evaluated by the current rubric.
-const ANALYSIS_VERSION = 3;
+const ANALYSIS_VERSION = 4;
 const DISCLAIMER = "This is an ATS-readiness estimate based on resume parsing and content checks. It is not a hiring prediction or a score from an employer's ATS.";
 
 const SECTION_DEFINITIONS = [
@@ -57,6 +57,68 @@ function buildRecommendations(findings) {
         recommendations.push({ focus: finding.title, priority: finding.priority, why: finding.evidence || finding.category, action: finding.detail });
     }
     return recommendations.length ? recommendations : [{ focus: "Tailor the resume to every role", priority: "low", why: "The structural checks found no immediate high-priority issue.", action: "Use the Job Description ATS Intelligence report before each application to align only genuine skills and experience with the target role." }];
+}
+
+const priorityRank = { critical: 0, high: 1, medium: 2, low: 3 };
+
+function sortFindings(findings) {
+    return [...findings].sort((left, right) => priorityRank[left.priority] - priorityRank[right.priority]);
+}
+
+function blendScore(primary, secondary, secondaryWeight = .45) {
+    return clamp((primary * (1 - secondaryWeight)) + (secondary * secondaryWeight));
+}
+
+function mergePythonResumeAnalysis(baseResult, pythonAnalysis) {
+    if (!pythonAnalysis) {
+        return {
+            ...baseResult,
+            analysisMeta: {
+                mode: "deterministic-fallback",
+                engineVersion: null,
+                reason: "The optional document-analysis service was unavailable; the deterministic ATS checks were used.",
+            },
+        };
+    }
+
+    const externalScoreByKey = {
+        parser: pythonAnalysis.scores.parseability,
+        sections: pythonAnalysis.scores.sections,
+        formatting: pythonAnalysis.scores.layout,
+        evidence: pythonAnalysis.scores.evidence,
+        skills: pythonAnalysis.scores.skills,
+    };
+    const scores = baseResult.scores.map((item) => {
+        const externalScore = externalScoreByKey[item.key];
+        if (externalScore === undefined) return item;
+        return {
+            ...item,
+            score: blendScore(item.score, externalScore),
+            summary: `${item.summary} Document-structure signals were independently verified.`,
+        };
+    });
+    const findingsById = new Map(baseResult.findings.map((finding) => [finding.id, finding]));
+    for (const finding of pythonAnalysis.findings) {
+        if (!findingsById.has(finding.id)) findingsById.set(finding.id, finding);
+    }
+    const findings = sortFindings([...findingsById.values()]);
+    const skills = [...new Set([...baseResult.skills, ...pythonAnalysis.skills])].sort();
+    const overallScore = blendScore(baseResult.overallScore, pythonAnalysis.scores.overall);
+
+    return {
+        ...baseResult,
+        overallScore,
+        label: scoreLabel(overallScore),
+        scores,
+        skills,
+        findings,
+        recommendations: buildRecommendations(findings),
+        analysisMeta: {
+            mode: "python-enhanced",
+            engineVersion: pythonAnalysis.engineVersion,
+            reason: null,
+        },
+    };
 }
 
 function createContentHash(buffer) { return crypto.createHash("sha256").update(buffer).digest("hex"); }
@@ -128,7 +190,7 @@ function buildResumeAtsAnalysis(resumeText) {
     if (actionLedBulletCount < 2) addFinding("achievement-bullets", "Evidence quality", "medium", "Lead bullets with clear actions", "Start each key bullet with an action verb such as Built, Improved, Designed, or Reduced, then add the result or scope.", 5, `${actionLedBulletCount} action-led bullet lines detected`);
     if (timelineRangeCount < 1 || dateSignalCount < 2) addFinding("chronology-dates", "Timeline clarity", "low", "Make timelines easy to parse", "Include clear month/year or year ranges for education, internships, employment, and major projects.", 3);
     if (!sections.find((section) => section.key === "skills").present || skills.length < 4) addFinding("skills-clarity", "Skills", "medium", "Make technical skills easier to scan", "Use a clearly named Technical Skills section with relevant technologies grouped by category.", 5);
-    const sortedFindings = findings.sort((left, right) => ({ critical: 0, high: 1, medium: 2, low: 3 }[left.priority] - { critical: 0, high: 1, medium: 2, low: 3 }[right.priority]));
+    const sortedFindings = sortFindings(findings);
     const recommendations = buildRecommendations(sortedFindings);
 
     return {
@@ -153,4 +215,4 @@ function buildResumeAtsAnalysis(resumeText) {
     };
 }
 
-module.exports = { ANALYSIS_VERSION, buildResumeAtsAnalysis, createContentHash, DISCLAIMER };
+module.exports = { ANALYSIS_VERSION, buildResumeAtsAnalysis, createContentHash, mergePythonResumeAnalysis, DISCLAIMER };

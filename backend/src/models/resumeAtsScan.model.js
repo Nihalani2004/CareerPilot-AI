@@ -60,6 +60,11 @@ const resumeAtsScanSchema = new mongoose.Schema({
         skills: [{ type: String, maxlength: 80 }],
         findings: [findingSchema],
         recommendations: [recommendationSchema],
+        analysisMeta: {
+            mode: { type: String, enum: ["python-enhanced", "deterministic-fallback"], default: "deterministic-fallback" },
+            engineVersion: { type: String, default: null, maxlength: 30 },
+            reason: { type: String, default: null, maxlength: 220 },
+        },
         generatedAt: { type: Date, required: true },
     },
 }, { timestamps: true });
