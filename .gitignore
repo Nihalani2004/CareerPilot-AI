@@ -31,3 +31,4 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
+resume-analysis-service/.venv/
