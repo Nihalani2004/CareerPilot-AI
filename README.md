@@ -12,7 +12,7 @@
 
 ![Backend](https://img.shields.io/badge/Backend-Node.js%20%2B%20Express-2f855a?style=flat-square&logo=nodedotjs&logoColor=white)
 ![Frontend](https://img.shields.io/badge/Frontend-React%2019%20%2B%20Vite-2563eb?style=flat-square&logo=react&logoColor=white)
-![AI](https://img.shields.io/badge/AI-Google%20Gemini%202.5%20Pro-7c3aed?style=flat-square&logo=google-gemini&logoColor=white)
+![AI](https://img.shields.io/badge/AI-Google%20Gemini%203.6%20Flash-7c3aed?style=flat-square&logo=google-gemini&logoColor=white)
 ![Database](https://img.shields.io/badge/Database-MongoDB-16a34a?style=flat-square&logo=mongodb&logoColor=white)
 ![Language](https://img.shields.io/badge/Language-JavaScript-f59e0b?style=flat-square&logo=javascript&logoColor=white)
 ![License](https://img.shields.io/badge/License-ISC-eab308?style=flat-square)
