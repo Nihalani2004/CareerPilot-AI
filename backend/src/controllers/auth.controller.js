@@ -229,7 +229,7 @@ async function oauthCallbackController(req, res) {
         const identity = await exchangeAuthorizationCode(provider, req.query.code);
         const user = await findOrCreateOAuthUser(identity);
         res.cookie("token", createSessionToken(user), getAuthCookieOptions());
-        return res.redirect(302, buildFrontendRedirect("/"));
+        return res.redirect(302, buildFrontendRedirect("/app"));
     } catch (error) {
         if (error instanceof OAuthError && error.status === 404) {
             return res.status(404).json({ message: "OAuth provider not found." });
