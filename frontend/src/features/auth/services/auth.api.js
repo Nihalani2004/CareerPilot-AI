@@ -1,11 +1,12 @@
 import axios from 'axios';
+import { apiBaseUrl } from '../../../shared/lib/api-base-url';
 const api = axios.create({
-    baseURL : import.meta.env.VITE_API_BASE_URL || "http://localhost:3000",
+    baseURL : apiBaseUrl,
     withCredentials: true
 })
 
 export function getOAuthSignInUrl(provider) {
-    const baseUrl = (import.meta.env.VITE_API_BASE_URL || "http://localhost:3000").replace(/\/$/, "");
+    const baseUrl = apiBaseUrl.replace(/\/$/, "");
     return `${baseUrl}/api/auth/oauth/${provider}`;
 }
 

@@ -1,6 +1,7 @@
 import axios from "axios";
+import { apiBaseUrl } from "../../../shared/lib/api-base-url";
 
-const api = axios.create({ baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:3000", withCredentials: true });
+const api = axios.create({ baseURL: apiBaseUrl, withCredentials: true });
 
 export async function createResumeAtsScan(file, displayName = "") {
     const formData = new FormData();
